@@ -100,7 +100,7 @@
         canvas {
             border: 2px solid green;
             position: relative;
-            width: 100%;
+            width: calc(100% - 40px);
             height: auto;
             max-height: calc(100vh - 120px);
             aspect-ratio: 9 / 16;
@@ -131,7 +131,7 @@
         const textPreview = document.getElementById('textPreview');
         const previewCanvas = document.getElementById('previewCanvas');
         const ctx = previewCanvas.getContext('2d');
-        let fontSize = 50;
+        let fontSize = 40;
 
         textInput.addEventListener('input', function() {
             updatePreview();
@@ -184,7 +184,7 @@
             tempCtx.font = `bold ${fontSize * 2}px Montserrat`;
             tempCtx.textAlign = 'center';
             tempCtx.textBaseline = 'middle';
-            tempCtx.fillStyle = 'black';
+            tempCtx.fillStyle = 'white';
 
             const words = textInput.value.split(' ');
             let line = '';
@@ -216,7 +216,7 @@
             const canvasRatio = previewCanvas.width / previewCanvas.height;
 
             if (screenRatio > canvasRatio) {
-                previewCanvas.style.width = '100%';
+                previewCanvas.style.width = 'calc(100% - 40px)';
                 previewCanvas.style.height = 'auto';
             } else {
                 previewCanvas.style.height = '100%';
