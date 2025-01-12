@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Video Sticker Maker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            color: #4caf50;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        video {
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        input {
+            margin: 10px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        button:hover:enabled {
+            background-color: #45a049;
+        }
+
+        .download-link {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>WhatsApp Video Sticker Maker</h1>
+        <input type="file" id="videoInput" accept="video/*">
+        <br>
+        <video id="videoPreview" controls></video>
+        <br>
+        <button id="convertBtn" disabled>Convert to Sticker</button>
+        <a id="downloadLink" class="download-link" style="display: none;">Download Sticker</a>
+        <br>
+        <button id="addToWA" style="display: none;">Add to WhatsApp</button>
+    </div>
+
+    <script>
+        const videoInput = document.getElementById('videoInput');
+        const videoPreview = document.getElementById('videoPreview');
+        const convertBtn = document.getElementById('convertBtn');
+        const downloadLink = document.getElementById('downloadLink');
+        const addToWA = document.getElementById('addToWA');
+
+        let selectedVideo = null;
+        let stickerBlob = null;
+
+        // Handle video input
+        videoInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                selectedVideo = file;
+                const url = URL.createObjectURL(file);
+                videoPreview.src = url;
+                videoPreview.style.display = 'block';
+                convertBtn.disabled = false;
+            }
+        });
+
+        // Convert video to WhatsApp-compatible WebP sticker
+        convertBtn.addEventListener('click', async () => {
+            if (!selectedVideo) return;
+
+            convertBtn.textContent = 'Converting...';
+            convertBtn.disabled = true;
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            videoPreview.pause();
+            videoPreview.currentTime = 0;
+
+            // Ensure 512x512 resolution
+            canvas.width = 512;
+            canvas.height = 512;
+
+            videoPreview.addEventListener('seeked', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw video frame centered and scaled to 512x512
+                const aspectRatio = videoPreview.videoWidth / videoPreview.videoHeight;
+                let drawWidth, drawHeight, offsetX, offsetY;
+
+                if (aspectRatio > 1) {
+                    // Landscape video
+                    drawWidth = canvas.width;
+                    drawHeight = canvas.width / aspectRatio;
+                    offsetX = 0;
+                    offsetY = (canvas.height - drawHeight) / 2;
+                } else {
+                    // Portrait or square video
+                    drawWidth = canvas.height * aspectRatio;
+                    drawHeight = canvas.height;
+                    offsetX = (canvas.width - drawWidth) / 2;
+                    offsetY = 0;
+                }
+
+                ctx.drawImage(videoPreview, offsetX, offsetY, drawWidth, drawHeight);
+
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        stickerBlob = blob;
+                        const url = URL.createObjectURL(blob);
+                        downloadLink.href = url;
+                        downloadLink.download = 'sticker.webp';
+                        downloadLink.style.display = 'inline';
+                        addToWA.style.display = 'inline';
+                        convertBtn.textContent = 'Convert to Sticker';
+                        convertBtn.disabled = false;
+                    } else {
+                        alert('Failed to convert video to sticker.');
+                    }
+                }, 'image/webp', 0.8); // Compress for WhatsApp
+            });
+
+            videoPreview.currentTime = 0.1; // Seek to first frame
+        });
+
+        // Add sticker to WhatsApp
+        addToWA.addEventListener('click', () => {
+            if (!stickerBlob) return;
+
+            const waData = {
+                files: [
+                    new File([stickerBlob], 'sticker.webp', { type: 'image/webp' })
+                ]
+            };
+
+            if (navigator.canShare && navigator.canShare(waData)) {
+                navigator.share(waData).then(() => {
+                    alert('Sticker added to WhatsApp successfully!');
+                }).catch((error) => {
+                    console.error('Error sharing sticker:', error);
+                });
+            } else {
+                alert('Your browser does not support sharing to WhatsApp.');
+            }
+        });
+    </script>
+</body>
+</html>
