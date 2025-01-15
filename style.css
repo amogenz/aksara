@@ -73,7 +73,7 @@ canvas {
     z-index: 1;/* Untuk membuat header di tengah */
 }
 #logo {
-    width: 50px;
+    width: 100px;
     position: absolute; /* Memposisikan logo relatif terhadap container header */
     top: 50%; /* Pusatkan logo secara vertikal */
     left: 50%; /* Pusatkan logo secara horizontal */
