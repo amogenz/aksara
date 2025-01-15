@@ -63,7 +63,7 @@ canvas {
 
 #headerGif {
     width: 100%;
-    max-width: 300px; /* Sesuaikan dengan lebar yang diinginkan */
+    max-width: 100px; /* Sesuaikan dengan lebar yang diinginkan */
     display: block;
     margin: 0 auto; /* Untuk membuat header di tengah */
 }
