@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input Teks dan Konversi ke Gambar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="input-container">
+        <div class="header-container">
+            <img id="headerGif" src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExN2Jyd2V1MW42Y3JvczJndmRqc2N3bzVqc2RkZ2N4a2lqZ3p4b2drbyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/11eK5y2h2l5y2I/giphy.gif" alt="Header GIF">
+            <img id="logo" src="https://upload.wikimedia.org/wikipedia/commons/a/ab/Android_O_Preview_Logo.png" alt="Logo">
+        </div>
+        
+        <img id="preview" alt="Pratinjau Gambar">
+        <input type="range" id="fontSizeSlider" min="27" max="150" value="57" oninput="debouncedGenerateImage()">
+        <button id="toggleTextareaButton" onclick="toggleTextarea()"> Teks  </button>
+        <textarea class="text-box" id="textInput" placeholder="Tulis kata-katamu di sini..." oninput="debouncedGenerateImage()"style="display: none;"></textarea>
+        <button id="downloadButton" onclick="downloadImage()">Download</button>
+    </div>
+    <canvas id="canvas" width="540" height="960"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>

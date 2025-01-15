@@ -1,0 +1,85 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #000000;
+    color: white;
+    margin: 0;
+    box-sizing: border-box;
+}
+.input-container {
+    max-width: 90%;
+    margin: 0 auto;
+    text-align: center;
+    width: 500px;
+}
+.text-box {
+    width: 100%;
+    height: 150px;
+    font-family: sans-serif;
+    font-weight: normal;
+    font-size: 16px;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    background-color: #222222;
+    color: white;
+    margin-top: 20px;
+    resize: none;
+}
+#fontSizeSlider {
+    margin-top: 10px;
+    width: 100%;
+}
+#downloadButton {
+    margin-top: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+#downloadButton:hover {
+    background-color: #45a049;
+}
+#preview {
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    width: 100%;
+    display: block;
+    margin-bottom: 10px;
+}
+canvas {
+    display: none;
+}
+.header-container {
+    position: relative; /* Membuat container sebagai parent untuk logo */
+    display: inline-block;
+    margin-bottom: 10px; /* Tambahkan margin agar ada jarak dengan elemen setelahnya */
+}
+
+#headerGif {
+    width: 100%;
+    max-width: 300px; /* Sesuaikan dengan lebar yang diinginkan */
+    display: block;
+    margin: 0 auto; /* Untuk membuat header di tengah */
+}
+#logo {
+    width: 50px;
+    position: absolute; /* Memposisikan logo relatif terhadap container header */
+    top: 50%; /* Pusatkan logo secara vertikal */
+    left: 50%; /* Pusatkan logo secara horizontal */
+    transform: translate(-50%, -50%); /* Mengoreksi posisi agar benar-benar di tengah */
+}
+@media screen and (max-width: 600px) {
+    .text-box {
+        font-size: 14px;
+        height: 120px;
+    }
+    #downloadButton {
+        font-size: 14px;
+    }
+}
