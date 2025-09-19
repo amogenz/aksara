@@ -16,7 +16,7 @@ const yourNotesSection = document.getElementById('your-notes');
 const navButtons = document.querySelectorAll('.nav-btn');
 
 // Fungsi untuk menyimpan catatan ke localStorage
-function saveNotes() {
+function saveNOTES() {
     localStorage.setItem('notes', JSON.stringify(notes));
 }
 
@@ -66,11 +66,27 @@ function renderNotes(filteredNotes = notes, container = notesList) {
     });
 }
 
+// Fungsi untuk generate judul otomatis berdasarkan tanggal
+function getAutoTitle() {
+    const now = new Date();
+    return new Intl.DateTimeFormat('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    }).format(now); // Output: "19 Sep 2025"
+}
+
 // Tambah atau edit catatan
 saveNoteBtn.addEventListener('click', () => {
-    const title = noteTitle.value.trim();
+    let title = noteTitle.value.trim();
     const content = noteContent.value.trim();
-    if (title && content) {
+    
+    // Jika judul kosong, kasih judul otomatis
+    if (!title) {
+        title = getAutoTitle();
+    }
+    
+    if (content) {
         if (saveNoteBtn.dataset.editingIndex !== undefined) {
             const index = parseInt(saveNoteBtn.dataset.editingIndex);
             notes[index] = { title, content };
@@ -84,7 +100,7 @@ saveNoteBtn.addEventListener('click', () => {
         noteTitle.value = '';
         noteContent.value = '';
     } else {
-        alert('Judul dan isi catatan tidak boleh kosong!');
+        alert('Isi catatan tidak boleh kosong!');
     }
 });
 
