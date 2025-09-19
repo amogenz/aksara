@@ -1,74 +1,147 @@
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
+// Array untuk menyimpan catatan (di-load dari localStorage)
+let notes = JSON.parse(localStorage.getItem('notes')) || [];
+
+// Elemen DOM
+const noteTitle = document.getElementById('note-title');
+const noteContent = document.getElementById('note-content');
+const saveNoteBtn = document.getElementById('save-note');
+const notesList = document.getElementById('notes-list');
+const searchInput = document.getElementById('search-input');
+const viewOnlySection = document.getElementById('view-only');
+const viewNote = document.getElementById('view-note');
+const noteForm = document.getElementById('note-form');
+const searchSection = document.getElementById('search-section');
+
+// Fungsi untuk menyimpan catatan ke localStorage
+function saveNotes() {
+    localStorage.setItem('notes', JSON.stringify(notes));
 }
 
-function generateImage() {
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-    const fontSize = document.getElementById('fontSizeSlider').value;
-    context.clearRect(0, 0, canvas.width, canvas.height);
+// Fungsi untuk encode catatan ke base64
+function encodeNote(note) {
+    return btoa(JSON.stringify(note));
+}
 
-    const text = document.getElementById('textInput').value;
-    context.fillStyle = '#ffffff';
-    context.font = `bold ${fontSize}px sans-serif`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
+// Fungsi untuk decode catatan dari base64
+function decodeNote(encoded) {
+    try {
+        return JSON.parse(atob(encoded));
+    } catch (e) {
+        return null;
+    }
+}
 
-    const maxWidth = canvas.width - 50;
-    const lineHeight = parseInt(fontSize) + 10;
-    const lines = wrapText(context, text, maxWidth);
+// Fungsi untuk generate share link
+function generateShareLink(index) {
+    const note = notes[index];
+    const encoded = encodeNote(note);
+    if (encoded.length > 1500) {
+        alert('Catatan terlalu panjang untuk dibagikan via URL!');
+        return null;
+    }
+    return `${window.location.origin}${window.location.pathname}?view=${index}&data=${encodeURIComponent(encoded)}`;
+}
 
-    const yStart = canvas.height / 2 - (lines.length / 2) * lineHeight;
-    lines.forEach((line, i) => {
-        context.fillText(line, canvas.width / 2, yStart + i * lineHeight);
+// Fungsi untuk menampilkan catatan
+function renderNotes(filteredNotes = notes) {
+    notesList.innerHTML = '';
+    filteredNotes.forEach((note, index) => {
+        const noteCard = document.createElement('div');
+        noteCard.classList.add('note-card');
+        noteCard.innerHTML = `
+            <h3>${note.title}</h3>
+            <p>${note.content}</p>
+            <div class="note-actions">
+                <button class="edit-btn" data-index="${index}">Edit</button>
+                <button class="delete-btn" data-index="${index}">Hapus</button>
+                <button class="share-btn" data-index="${index}">Share</button>
+            </div>
+        `;
+        notesList.appendChild(noteCard);
     });
-
-    const preview = document.getElementById('preview');
-    preview.src = canvas.toDataURL('image/png');
 }
 
-const debouncedGenerateImage = debounce(generateImage, 300);
-
-function downloadImage() {
-    const canvas = document.getElementById('canvas');
-    const link = document.createElement('a');
-    link.download = 'Quo [amogenz].png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-}
-
-function wrapText(context, text, maxWidth) {
-    const lines = [];
-    const paragraphs = text.split('\n');
-
-    paragraphs.forEach(paragraph => {
-        const words = paragraph.split(' ');
-        let line = '';
-
-        for (let i = 0; i < words.length; i++) {
-            const testLine = line + words[i] + ' ';
-            const metrics = context.measureText(testLine);
-            const testWidth = metrics.width;
-
-            if (testWidth > maxWidth && i > 0) {
-                lines.push(line);
-                line = words[i] + ' ';
-            } else {
-                line = testLine;
-            }
+// Tambah atau edit catatan
+saveNoteBtn.addEventListener('click', () => {
+    const title = noteTitle.value.trim();
+    const content = noteContent.value.trim();
+    if (title && content) {
+        if (saveNoteBtn.dataset.editingIndex !== undefined) {
+            // Mode edit
+            const index = parseInt(saveNoteBtn.dataset.editingIndex);
+            notes[index] = { title, content };
+            delete saveNoteBtn.dataset.editingIndex;
+            saveNoteBtn.textContent = 'Simpan Catatan';
+        } else {
+            // Mode tambah baru
+            notes.push({ title, content });
         }
-        lines.push(line);
-    });
-    return lines;
-}
-function toggleTextarea() {
-    const textarea = document.getElementById('textInput');
-    textarea.style.display = (textarea.style.display === 'none') ? 'block' : 'none';
+        saveNotes();
+        renderNotes();
+        noteTitle.value = '';
+        noteContent.value = '';
+    } else {
+        alert('Judul dan isi catatan tidak boleh kosong!');
+    }
+});
+
+// Event delegation untuk edit, hapus, dan share
+notesList.addEventListener('click', (e) => {
+    if (e.target.classList.contains('edit-btn')) {
+        const index = parseInt(e.target.dataset.index);
+        noteTitle.value = notes[index].title;
+        noteContent.value = notes[index].content;
+        saveNoteBtn.dataset.editingIndex = index;
+        saveNoteBtn.textContent = 'Update Catatan';
+    } else if (e.target.classList.contains('delete-btn')) {
+        const index = parseInt(e.target.dataset.index);
+        if (confirm('Yakin ingin hapus catatan ini?')) {
+            notes.splice(index, 1);
+            saveNotes();
+            renderNotes();
+        }
+    } else if (e.target.classList.contains('share-btn')) {
+        const index = parseInt(e.target.dataset.index);
+        const shareLink = generateShareLink(index);
+        if (shareLink) {
+            prompt('Salin tautan ini untuk membagikan catatan:', shareLink);
+        }
+    }
+});
+
+// Fungsi search
+searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    const filtered = notes.filter(note => 
+        note.title.toLowerCase().includes(query) || 
+        note.content.toLowerCase().includes(query)
+    );
+    renderNotes(filtered);
+});
+
+// Cek apakah ada parameter view di URL
+function checkViewMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewIndex = urlParams.get('view');
+    const encodedData = urlParams.get('data');
+    if (viewIndex !== null && encodedData !== null) {
+        const note = decodeNote(decodeURIComponent(encodedData));
+        if (note) {
+            noteForm.style.display = 'none';
+            searchSection.style.display = 'none';
+            notesList.style.display = 'none';
+            viewOnlySection.style.display = 'block';
+            viewNote.innerHTML = `
+                <h3>${note.title}</h3>
+                <p>${note.content}</p>
+            `;
+        } else {
+            viewNote.innerHTML = '<p>Catatan tidak valid atau rusak.</p>';
+        }
+    } else {
+        renderNotes();
+    }
 }
 
-// Panggil generateImage saat halaman dimuat
-window.onload = generateImage;
+// Jalankan cek view mode saat halaman dimuat
+checkViewMode();
