@@ -13,10 +13,12 @@
 </head>
 <body>
     <header>
-        <div class="logo-container">
-            <img src="https://i.imgur.com/Ct0pzwl.png" alt="Aksara Logo" class="logo">
-            <h1>Aksara</h1>
-        </div>
+        <a href="#" class="home-link">
+            <div class="logo-container">
+                <img src="https://i.imgur.com/Ct0pzwl.png" alt="Aksara Logo" class="logo">
+                <h1>Aksara</h1>
+            </div>
+        </a>
         <p class="tagline">Yang kamu hafal akan pergi, yang kamu tulis akan abadi.</p>
     </header>
     
@@ -37,7 +39,12 @@
         
         <section id="your-notes" class="main-content">
             <h2>Catatan Anda</h2>
-            <div id="notes-list"></div>
+            <div id="notes-list">
+                <div class="empty-state">
+                    <p>Anda belum menulis apapun</p>
+                    <button class="cta-btn" data-section="create-note">Tulis Catatan Sekarang</button>
+                </div>
+            </div>
         </section>
         
         <section id="view-only" class="main-content" style="display: none;">
@@ -59,7 +66,7 @@
     </nav>
     
     <footer>
-        <p>&copy; 2025 Aksara </p>
+        <p>&copy; 2025 Aksara - Dibuat dengan bantuan Grok</p>
     </footer>
     
     <script src="script.js"></script>
