@@ -19,6 +19,11 @@ header {
     border-bottom: 1px solid #38444D; /* Border abu Twitter */
 }
 
+.home-link {
+    text-decoration: none; /* No underline */
+    color: inherit; /* Warna sama dengan h1 */
+}
+
 .logo-container {
     display: flex;
     align-items: center;
@@ -141,6 +146,37 @@ main {
 }
 
 #save-note:hover {
+    background-color: #1A91DA;
+    transform: scale(1.05);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6B7280;
+    font-size: 16px;
+    font-style: italic;
+    font-family: 'SF Pro Text', sans-serif;
+}
+
+.empty-state p {
+    margin: 0 0 20px 0;
+}
+
+.cta-btn {
+    padding: 8px 16px;
+    background-color: #1DA1F2;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'SF Pro Text', sans-serif;
+}
+
+.cta-btn:hover {
     background-color: #1A91DA;
     transform: scale(1.05);
 }
@@ -423,8 +459,13 @@ footer {
         padding: 6px 0;
     }
     
-    #save-note {
+    #save-note, .cta-btn {
         padding: 6px 12px;
         font-size: 13px;
+    }
+    
+    .empty-state {
+        padding: 20px 10px;
+        font-size: 14px;
     }
 }
