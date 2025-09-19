@@ -7,10 +7,13 @@ const noteContent = document.getElementById('note-content');
 const saveNoteBtn = document.getElementById('save-note');
 const notesList = document.getElementById('notes-list');
 const searchInput = document.getElementById('search-input');
+const searchResults = document.getElementById('search-results');
 const viewOnlySection = document.getElementById('view-only');
 const viewNote = document.getElementById('view-note');
-const noteForm = document.getElementById('note-form');
-const searchSection = document.getElementById('search-section');
+const createNoteSection = document.getElementById('create-note');
+const searchNotesSection = document.getElementById('search-notes');
+const yourNotesSection = document.getElementById('your-notes');
+const navButtons = document.querySelectorAll('.nav-btn');
 
 // Fungsi untuk menyimpan catatan ke localStorage
 function saveNotes() {
@@ -19,7 +22,6 @@ function saveNotes() {
 
 // Fungsi untuk encode catatan ke base64
 function encodeNote(note) {
-    // Gunakan unescape dan encodeURIComponent untuk handle karakter non-ASCII seperti Arab
     const jsonString = JSON.stringify(note);
     const escaped = unescape(encodeURIComponent(jsonString));
     return btoa(escaped);
@@ -44,8 +46,8 @@ function generateShareLink(index) {
 }
 
 // Fungsi untuk menampilkan catatan
-function renderNotes(filteredNotes = notes) {
-    notesList.innerHTML = '';
+function renderNotes(filteredNotes = notes, container = notesList) {
+    container.innerHTML = '';
     filteredNotes.forEach((note, index) => {
         const noteCard = document.createElement('div');
         noteCard.classList.add('note-card');
@@ -58,7 +60,7 @@ function renderNotes(filteredNotes = notes) {
                 <button class="share-btn" data-index="${index}">Share</button>
             </div>
         `;
-        notesList.appendChild(noteCard);
+        container.appendChild(noteCard);
     });
 }
 
@@ -68,17 +70,15 @@ saveNoteBtn.addEventListener('click', () => {
     const content = noteContent.value.trim();
     if (title && content) {
         if (saveNoteBtn.dataset.editingIndex !== undefined) {
-            // Mode edit
             const index = parseInt(saveNoteBtn.dataset.editingIndex);
             notes[index] = { title, content };
             delete saveNoteBtn.dataset.editingIndex;
             saveNoteBtn.textContent = 'Simpan Catatan';
         } else {
-            // Mode tambah baru
             notes.push({ title, content });
         }
         saveNotes();
-        renderNotes();
+        renderNotes(notes, notesList);
         noteTitle.value = '';
         noteContent.value = '';
     } else {
@@ -94,24 +94,24 @@ notesList.addEventListener('click', (e) => {
         noteContent.value = notes[index].content;
         saveNoteBtn.dataset.editingIndex = index;
         saveNoteBtn.textContent = 'Update Catatan';
+        showSection('create-note');
     } else if (e.target.classList.contains('delete-btn')) {
         const index = parseInt(e.target.dataset.index);
         if (confirm('Yakin ingin hapus catatan ini?')) {
             notes.splice(index, 1);
             saveNotes();
-            renderNotes();
+            renderNotes(notes, notesList);
         }
     } else if (e.target.classList.contains('share-btn')) {
         const index = parseInt(e.target.dataset.index);
         const shareLink = generateShareLink(index);
-        // Auto-copy ke clipboard
         navigator.clipboard.writeText(shareLink)
             .then(() => {
                 alert('Link berhasil dicopy ke clipboard! Bagikan ke orang lain.');
             })
             .catch(err => {
                 console.error('Gagal copy: ', err);
-                prompt('Copy tautan ini secara manual:', shareLink);  // Fallback jika clipboard gagal
+                prompt('Copy tautan ini secara manual:', shareLink);
             });
     }
 });
@@ -123,7 +123,35 @@ searchInput.addEventListener('input', (e) => {
         note.title.toLowerCase().includes(query) || 
         note.content.toLowerCase().includes(query)
     );
-    renderNotes(filtered);
+    renderNotes(filtered, searchResults);
+});
+
+// Fungsi untuk mengelola likes di localStorage
+function getLikes(index) {
+    const likes = localStorage.getItem(`likes_${index}`);
+    return likes ? parseInt(likes) : 0;
+}
+
+function setLikes(index, count) {
+    localStorage.setItem(`likes_${index}`, count);
+}
+
+// Fungsi untuk menampilkan section tertentu
+function showSection(sectionId) {
+    createNoteSection.style.display = sectionId === 'create-note' ? 'block' : 'none';
+    searchNotesSection.style.display = sectionId === 'search-notes' ? 'block' : 'none';
+    yourNotesSection.style.display = sectionId === 'your-notes' ? 'block' : 'none';
+    viewOnlySection.style.display = sectionId === 'view-only' ? 'block' : 'none';
+    navButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.section === sectionId);
+    });
+}
+
+// Event listener untuk navigasi
+navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        showSection(btn.dataset.section);
+    });
 });
 
 // Cek apakah ada parameter view di URL
@@ -134,19 +162,49 @@ function checkViewMode() {
     if (viewIndex !== null && encodedData !== null) {
         const note = decodeNote(decodeURIComponent(encodedData));
         if (note) {
-            noteForm.style.display = 'none';
-            searchSection.style.display = 'none';
-            notesList.style.display = 'none';
+            createNoteSection.style.display = 'none';
+            searchNotesSection.style.display = 'none';
+            yourNotesSection.style.display = 'none';
             viewOnlySection.style.display = 'block';
+            document.querySelector('.bottom-nav').style.display = 'none'; // Sembunyikan navbar di view-only
+            const likes = getLikes(viewIndex);
             viewNote.innerHTML = `
                 <h3>${note.title}</h3>
                 <p>${note.content}</p>
+                <div class="note-actions">
+                    <button class="like-btn" data-index="${viewIndex}">
+                        <span class="heart-icon">❤️</span> ${likes} Likes
+                    </button>
+                    <button class="copy-btn">Copy Teks</button>
+                </div>
             `;
+            viewNote.addEventListener('click', (e) => {
+                if (e.target.classList.contains('like-btn') || e.target.parentElement.classList.contains('like-btn')) {
+                    const btn = e.target.classList.contains('like-btn') ? e.target : e.target.parentElement;
+                    const index = parseInt(btn.dataset.index);
+                    const isLiked = btn.classList.contains('liked');
+                    const currentLikes = getLikes(index);
+                    const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
+                    setLikes(index, newLikes);
+                    btn.classList.toggle('liked');
+                    btn.innerHTML = `<span class="heart-icon">❤️</span> ${newLikes} Likes`;
+                } else if (e.target.classList.contains('copy-btn')) {
+                    navigator.clipboard.writeText(note.content)
+                        .then(() => {
+                            alert('Teks catatan berhasil dicopy ke clipboard!');
+                        })
+                        .catch(err => {
+                            console.error('Gagal copy: ', err);
+                            prompt('Copy teks ini secara manual:', note.content);
+                        });
+                }
+            });
         } else {
             viewNote.innerHTML = '<p>Catatan tidak valid atau rusak.</p>';
         }
     } else {
-        renderNotes();
+        showSection('your-notes'); // Default ke Catatan Anda
+        renderNotes(notes, notesList);
     }
 }
 
