@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Aksara - Aplikasi Catatan Sederhana</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&family=SF+Pro+Text:wght@400;500&display=swap');
     </style>
@@ -16,18 +17,28 @@
     </header>
     
     <main>
-        <section id="note-form" class="main-content">
-            <input type="text" id="note-title" placeholder="Judul Catatan">
-            <textarea id="note-content" placeholder="Isi Catatan..."></textarea>
+        <section id="create-note" class="main-content" style="display: none;">
+            <h2>Buat Catatan</h2>
+            <div class="form-group">
+                <label for="note-title">Judul</label>
+                <input type="text" id="note-title" placeholder="Judul Catatan">
+            </div>
+            <div class="form-group">
+                <label for="note-content">Isi Catatan</label>
+                <textarea id="note-content" placeholder="Isi Catatan..."></textarea>
+            </div>
             <button id="save-note">Simpan Catatan</button>
         </section>
         
-        <section id="search-section" class="main-content">
+        <section id="search-notes" class="main-content" style="display: none;">
+            <h2>Cari Catatan Anda</h2>
             <input type="text" id="search-input" placeholder="Cari catatan...">
+            <div id="search-results"></div>
         </section>
         
-        <section id="notes-list" class="main-content">
-            <!-- Daftar catatan akan ditampilkan di sini secara dinamis -->
+        <section id="your-notes" class="main-content">
+            <h2>Catatan Anda</h2>
+            <div id="notes-list"></div>
         </section>
         
         <section id="view-only" class="main-content" style="display: none;">
@@ -35,6 +46,18 @@
             <div id="view-note"></div>
         </section>
     </main>
+    
+    <nav class="bottom-nav">
+        <button class="nav-btn" data-section="create-note">
+            <i class="fas fa-feather-alt"></i>
+        </button>
+        <button class="nav-btn" data-section="search-notes">
+            <i class="fas fa-search"></i>
+        </button>
+        <button class="nav-btn active" data-section="your-notes">
+            <i class="fas fa-home"></i>
+        </button>
+    </nav>
     
     <footer>
         <p>&copy; 2025 Aksara - Dibuat dengan bantuan Grok</p>
