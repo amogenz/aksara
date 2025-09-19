@@ -3,25 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aksara</title></title>
-    <link rel="icon" href="https://i.imgur.com/Op26sO7.jpeg">
+    <title>Aksara - Aplikasi Catatan Sederhana</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&family=SF+Pro+Text:wght@400;500&display=swap');
+    </style>
 </head>
 <body>
-    <div class="input-container">
-        <div class="header-container">
-            <img id="headerGif" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj4ODJy1Q9zMX4wneuaVqzQLCZIX9hyVRLjRBOXwDu9s-9An6IYRRebkSlAsMXmncOKMGrxSgeJbowE1tzGdoNongp_dDAGWt8n_RFGjRW-4_5THIZSb8P-tZ2-4en155NFBGsivJoWNyog/s1600/Kumpulan-Animasi-Bergerak2.gif" alt="Header GIF">
-            <img id="logo" src="https://i.imgur.com/0kFvOiV.png" alt="Logo">
-        </div>
+    <header>
+        <h1>Aksara</h1>
+        <p>Catat ide-ide Anda dengan mudah!</p>
+    </header>
+    
+    <main>
+        <section id="note-form" class="main-content">
+            <input type="text" id="note-title" placeholder="Judul Catatan">
+            <textarea id="note-content" placeholder="Isi Catatan..."></textarea>
+            <button id="save-note">Simpan Catatan</button>
+        </section>
         
-        <img id="preview" alt="Pratinjau Gambar">
-        <input type="range" id="fontSizeSlider" min="27" max="150" value="57" oninput="debouncedGenerateImage()">
-        <button id="toggleTextareaButton" onclick="toggleTextarea()"> Tekan </button>
-        <textarea class="text-box" id="textInput" placeholder="Tulis kata-katamu di sini..." oninput="debouncedGenerateImage()"style="display: none;"></textarea>
-        <button id="downloadButton" onclick="downloadImage()">Download</button>
-    </div>
-    <canvas id="canvas" width="540" height="960"></canvas>
-
+        <section id="search-section" class="main-content">
+            <input type="text" id="search-input" placeholder="Cari catatan...">
+        </section>
+        
+        <section id="notes-list" class="main-content">
+            <!-- Daftar catatan akan ditampilkan di sini secara dinamis -->
+        </section>
+        
+        <section id="view-only" class="main-content" style="display: none;">
+            <h2>Catatan Bersama</h2>
+            <div id="view-note"></div>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 Aksara - Dibuat dengan bantuan Grok</p>
+    </footer>
+    
     <script src="script.js"></script>
 </body>
 </html>
