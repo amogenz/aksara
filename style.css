@@ -163,21 +163,51 @@ main {
     margin-bottom: 10px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid #38444D;
+    transition: all 0.3s ease; /* Animasi smooth untuk height dan opacity */
+    cursor: pointer; /* Cursor pointer untuk klik preview */
+    min-height: 100px; /* Pastikan card ga patah-patah */
+    overflow: visible; /* Pastikan ga overflow hidden di card utama */
 }
 
 .note-card h3 {
-    margin: 0 0 8px;
+    margin: 0 0 8px 0;
     font-family: 'SF Pro Display', sans-serif;
     font-weight: 600;
     font-size: 20px;
     color: #1DA1F2;
+    cursor: pointer; /* Pointer khusus judul */
 }
 
-.note-card p {
-    margin: 0 0 15px;
+.note-card .note-preview {
+    margin: 0 0 15px 0;
     font-size: 16px;
     color: #D9D9D9;
     line-height: 1.4;
+    white-space: pre-wrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Batasi ke 3 baris */
+    -webkit-box-orient: vertical;
+    overflow: hidden; /* Hidden khusus preview */
+    text-overflow: ellipsis;
+}
+
+.note-card .full-content {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    color: #D9D9D9;
+    line-height: 1.4;
+    white-space: pre-wrap; /* Preserve line breaks di full */
+    display: none; /* Hidden default */
+}
+
+.note-card.expanded .note-preview {
+    display: none;
+}
+
+.note-card.expanded .full-content {
+    display: block;
+    max-height: none; /* Pastikan full content ga kepotong */
+    overflow: visible; /* Visible biar teks panjang ga hilang */
 }
 
 .note-actions {
@@ -241,7 +271,7 @@ main {
 }
 
 #view-note h3 {
-    margin: 0 0 8px;
+    margin: 0 0 8px 0;
     font-family: 'SF Pro Display', sans-serif;
     font-weight: 600;
     font-size: 20px;
@@ -249,7 +279,7 @@ main {
 }
 
 #view-note p {
-    margin: 0 0 15px;
+    margin: 0 0 15px 0;
     font-size: 16px;
     color: #D9D9D9;
     line-height: 1.4;
