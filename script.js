@@ -17,15 +17,18 @@ function saveNotes() {
     localStorage.setItem('notes', JSON.stringify(notes));
 }
 
-// Fungsi untuk encode catatan ke base64
+// Fungsi untuk encode catatan ke base64 dengan dukungan Unicode penuh
 function encodeNote(note) {
-    return btoa(JSON.stringify(note));
+    const jsonString = JSON.stringify(note);
+    const encoded = btoa(unescape(encodeURIComponent(jsonString)));
+    return encoded;
 }
 
-// Fungsi untuk decode catatan dari base64
+// Fungsi untuk decode catatan dari base64 dengan dukungan Unicode
 function decodeNote(encoded) {
     try {
-        return JSON.parse(atob(encoded));
+        const decoded = decodeURIComponent(escape(atob(encoded)));
+        return JSON.parse(decoded);
     } catch (e) {
         return null;
     }
@@ -35,8 +38,8 @@ function decodeNote(encoded) {
 function generateShareLink(index) {
     const note = notes[index];
     const encoded = encodeNote(note);
-    if (encoded.length > 1500) {
-        alert('Catatan terlalu panjang untuk dibagikan via URL!');
+    if (encoded.length > 2000) { // Tingkatkan limit untuk catatan lebih panjang
+        alert('Catatan terlalu panjang untuk dibagikan via URL! Coba pendekkan atau gunakan metode lain.');
         return null;
     }
     return `${window.location.origin}${window.location.pathname}?view=${index}&data=${encodeURIComponent(encoded)}`;
@@ -104,7 +107,14 @@ notesList.addEventListener('click', (e) => {
         const index = parseInt(e.target.dataset.index);
         const shareLink = generateShareLink(index);
         if (shareLink) {
-            prompt('Salin tautan ini untuk membagikan catatan:', shareLink);
+            navigator.clipboard.writeText(shareLink)
+                .then(() => {
+                    alert('Tautan telah disalin ke clipboard! Bagikan ke orang lain untuk melihat catatan sebagai pengamat.');
+                })
+                .catch(err => {
+                    console.error('Gagal menyalin: ', err);
+                    prompt('Gagal menyalin otomatis. Salin tautan ini secara manual:', shareLink);
+                });
         }
     }
 });
