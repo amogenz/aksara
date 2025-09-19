@@ -45,15 +45,17 @@ function generateShareLink(index) {
     return `${window.location.origin}${window.location.pathname}?view=${index}&data=${encodeURIComponent(encoded)}`;
 }
 
-// Fungsi untuk menampilkan catatan
+// Fungsi untuk menampilkan catatan dengan preview
 function renderNotes(filteredNotes = notes, container = notesList) {
     container.innerHTML = '';
     filteredNotes.forEach((note, index) => {
         const noteCard = document.createElement('div');
         noteCard.classList.add('note-card');
+        const previewText = note.content.length > 150 ? note.content.substring(0, 150) + '...' : note.content;
         noteCard.innerHTML = `
             <h3>${note.title}</h3>
-            <p>${note.content}</p>
+            <p class="note-preview">${previewText}</p>
+            <p class="full-content">${note.content}</p>
             <div class="note-actions">
                 <button class="edit-btn" data-index="${index}">Edit</button>
                 <button class="delete-btn" data-index="${index}">Hapus</button>
@@ -86,33 +88,49 @@ saveNoteBtn.addEventListener('click', () => {
     }
 });
 
-// Event delegation untuk edit, hapus, dan share
-notesList.addEventListener('click', (e) => {
-    if (e.target.classList.contains('edit-btn')) {
-        const index = parseInt(e.target.dataset.index);
-        noteTitle.value = notes[index].title;
-        noteContent.value = notes[index].content;
-        saveNoteBtn.dataset.editingIndex = index;
-        saveNoteBtn.textContent = 'Update Catatan';
-        showSection('create-note');
-    } else if (e.target.classList.contains('delete-btn')) {
-        const index = parseInt(e.target.dataset.index);
-        if (confirm('Yakin ingin hapus catatan ini?')) {
-            notes.splice(index, 1);
-            saveNotes();
-            renderNotes(notes, notesList);
+// Event delegation untuk edit, hapus, share, dan toggle preview/full
+document.addEventListener('click', (e) => {
+    const target = e.target;
+    const card = target.closest('.note-card');
+    if (card) {
+        if (target.closest('.note-actions')) {
+            // Handle tombol aksi
+            if (target.classList.contains('edit-btn')) {
+                const index = parseInt(target.dataset.index);
+                noteTitle.value = notes[index].title;
+                noteContent.value = notes[index].content;
+                saveNoteBtn.dataset.editingIndex = index;
+                saveNoteBtn.textContent = 'Update Catatan';
+                showSection('create-note');
+            } else if (target.classList.contains('delete-btn')) {
+                const index = parseInt(target.dataset.index);
+                if (confirm('Yakin ingin hapus catatan ini?')) {
+                    notes.splice(index, 1);
+                    saveNotes();
+                    renderNotes(notes, notesList);
+                    const query = searchInput.value.toLowerCase();
+                    const filtered = notes.filter(note => 
+                        note.title.toLowerCase().includes(query) || 
+                        note.content.toLowerCase().includes(query)
+                    );
+                    renderNotes(filtered, searchResults);
+                }
+            } else if (target.classList.contains('share-btn')) {
+                const index = parseInt(target.dataset.index);
+                const shareLink = generateShareLink(index);
+                navigator.clipboard.writeText(shareLink)
+                    .then(() => {
+                        alert('Link berhasil dicopy ke clipboard! Bagikan ke orang lain.');
+                    })
+                    .catch(err => {
+                        console.error('Gagal copy: ', err);
+                        prompt('Copy tautan ini secara manual:', shareLink);
+                    });
+            }
+        } else {
+            // Toggle preview/full jika klik di luar aksi (judul, preview, atau card)
+            card.classList.toggle('expanded');
         }
-    } else if (e.target.classList.contains('share-btn')) {
-        const index = parseInt(e.target.dataset.index);
-        const shareLink = generateShareLink(index);
-        navigator.clipboard.writeText(shareLink)
-            .then(() => {
-                alert('Link berhasil dicopy ke clipboard! Bagikan ke orang lain.');
-            })
-            .catch(err => {
-                console.error('Gagal copy: ', err);
-                prompt('Copy tautan ini secara manual:', shareLink);
-            });
     }
 });
 
