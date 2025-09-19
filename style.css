@@ -5,6 +5,7 @@ body {
     font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0;
     padding: 20px;
+    padding-bottom: 80px; /* Space untuk bottom nav */
     line-height: 1.6;
     font-size: 17px;
 }
@@ -37,26 +38,48 @@ main {
 
 .main-content {
     background-color: #1E2A3C; /* Gelap kontras untuk card */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Shadow lebih subtle */
+    padding: 24px; /* Padding lebih lega */
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     margin-bottom: 20px;
 }
 
-#note-form {
+.main-content h2 {
+    font-family: 'SF Pro Display', sans-serif;
+    font-weight: 600;
+    font-size: 24px;
+    color: #1DA1F2;
+    margin: 0 0 20px;
+}
+
+#create-note .form-group {
     display: flex;
     flex-direction: column;
+    margin-bottom: 20px;
+}
+
+#create-note label {
+    font-size: 14px;
+    color: #6B7280;
+    margin-bottom: 8px;
+    font-weight: 500;
 }
 
 #note-title {
-    padding: 12px 16px;
-    margin-bottom: 15px;
+    padding: 14px 16px;
     border: 1px solid #38444D;
-    border-radius: 10px;
-    background-color: #1E2A3C;
+    border-radius: 12px;
+    background-color: #252F3F;
     color: #D9D9D9;
     font-size: 17px;
     font-family: 'SF Pro Text', sans-serif;
+    transition: border-color 0.2s ease;
+}
+
+#note-title:focus {
+    outline: none;
+    border-color: #1DA1F2;
+    box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.2);
 }
 
 #note-title::placeholder {
@@ -65,17 +88,23 @@ main {
 }
 
 #note-content {
-    padding: 12px 16px;
-    margin-bottom: 15px;
+    padding: 14px 16px;
     border: 1px solid #38444D;
-    border-radius: 10px;
-    background-color: #1E2A3C;
+    border-radius: 12px;
+    background-color: #252F3F;
     color: #D9D9D9;
     font-size: 16px;
-    height: 150px;
+    height: 200px;
     resize: vertical;
     font-family: 'SF Pro Text', sans-serif;
     line-height: 1.4;
+    transition: border-color 0.2s ease;
+}
+
+#note-content:focus {
+    outline: none;
+    border-color: #1DA1F2;
+    box-shadow: 0 0 0 2px rgba(29, 161, 242, 0.2);
 }
 
 #note-content::placeholder {
@@ -84,24 +113,22 @@ main {
 }
 
 #save-note {
-    padding: 12px 20px;
-    background-color: #1DA1F2; /* Aksen biru Twitter */
+    padding: 12px 24px;
+    background-color: #1DA1F2;
     color: #FFFFFF;
     border: none;
-    border-radius: 10px;
+    border-radius: 50px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
     font-size: 17px;
     font-weight: 600;
     font-family: 'SF Pro Text', sans-serif;
-    align-self: flex-start;
+    align-self: flex-end;
 }
 
 #save-note:hover {
-    background-color: #1A91DA; /* Biru lebih gelap on hover */
-}
-
-#search-section {
+    background-color: #1A91DA;
+    transform: scale(1.05);
 }
 
 #search-input {
@@ -117,6 +144,10 @@ main {
 
 #search-input::placeholder {
     color: #6B7280;
+}
+
+#search-results {
+    margin-top: 15px;
 }
 
 #notes-list {
@@ -139,7 +170,7 @@ main {
     font-family: 'SF Pro Display', sans-serif;
     font-weight: 600;
     font-size: 20px;
-    color: #1DA1F2; /* Aksen biru untuk judul */
+    color: #1DA1F2;
 }
 
 .note-card p {
@@ -155,7 +186,7 @@ main {
     gap: 10px;
 }
 
-.edit-btn, .delete-btn, .share-btn {
+.edit-btn, .delete-btn, .share-btn, .like-btn, .copy-btn {
     padding: 8px 16px;
     border: none;
     border-radius: 8px;
@@ -167,7 +198,7 @@ main {
 }
 
 .edit-btn {
-    background-color: #1DA1F2; /* Biru Twitter untuk edit */
+    background-color: #1DA1F2;
     color: #FFFFFF;
 }
 
@@ -176,7 +207,7 @@ main {
 }
 
 .delete-btn {
-    background-color: #FF3B30; /* Tetap merah untuk hapus, kontras */
+    background-color: #FF3B30;
     color: #FFFFFF;
 }
 
@@ -185,7 +216,7 @@ main {
 }
 
 .share-btn {
-    background-color: #1DA1F2; /* Biru Twitter untuk share */
+    background-color: #1DA1F2;
     color: #FFFFFF;
 }
 
@@ -204,8 +235,9 @@ main {
 #view-note {
     background-color: #1E2A3C;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 20px;
 }
 
 #view-note h3 {
@@ -217,10 +249,81 @@ main {
 }
 
 #view-note p {
-    margin: 0;
+    margin: 0 0 15px;
     font-size: 16px;
     color: #D9D9D9;
     line-height: 1.4;
+}
+
+#view-note .note-actions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 15px;
+    align-items: center;
+}
+
+.like-btn {
+    background-color: transparent;
+    color: #1DA1F2;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+}
+
+.like-btn.liked {
+    color: #F91880;
+}
+
+.like-btn:hover {
+    background-color: rgba(29, 161, 242, 0.1);
+}
+
+.copy-btn {
+    background-color: #1DA1F2;
+    color: #FFFFFF;
+}
+
+.copy-btn:hover {
+    background-color: #1A91DA;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #1E2A3C;
+    display: flex;
+    justify-content: space-around;
+    padding: 14px 0; /* Padding lebih lega tanpa teks */
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+.nav-btn {
+    background-color: transparent;
+    border: none;
+    color: #D9D9D9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px; /* Ikon lebih besar */
+    font-family: 'SF Pro Text', sans-serif;
+    cursor: pointer;
+    padding: 12px;
+    transition: color 0.2s ease, transform 0.2s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.nav-btn.active {
+    color: #1DA1F2;
+    border-bottom: 3px solid #1DA1F2; /* Indikator aktif ala Twitter */
+}
+
+.nav-btn:hover {
+    color: #1DA1F2;
+    transform: scale(1.1); /* Efek pop tanpa teks */
 }
 
 footer {
@@ -235,6 +338,7 @@ footer {
 @media (max-width: 600px) {
     body {
         padding: 10px;
+        padding-bottom: 90px; /* Extra space untuk navbar di mobile */
     }
     
     .main-content {
@@ -244,5 +348,9 @@ footer {
     .note-card {
         padding: 15px;
         margin-bottom: 5px;
+    }
+    
+    #view-note {
+        padding: 15px;
     }
 }
