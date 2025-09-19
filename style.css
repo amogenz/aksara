@@ -11,24 +11,38 @@ body {
 }
 
 header {
-    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Align kiri */
     margin-bottom: 30px;
     padding-bottom: 20px;
     border-bottom: 1px solid #38444D; /* Border abu Twitter */
 }
 
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Jarak logo dan teks */
+}
+
+.logo {
+    width: 32px; /* Ukuran kecil, nyaman di mata */
+    height: 32px;
+    object-fit: contain;
+}
+
 h1 {
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-weight: 700;
-    font-size: 34px;
+    font-size: 24px; /* Kecilkan biar nyaman */
     color: #1DA1F2; /* Aksen biru Twitter */
-    margin: 0 0 5px;
+    margin: 0;
 }
 
 header p {
     font-size: 17px;
     color: #6B7280; /* Abu redup untuk secondary text */
-    margin: 0;
+    margin: 5px 0 0 0;
 }
 
 main {
@@ -42,6 +56,8 @@ main {
     border-radius: 12px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     margin-bottom: 20px;
+    max-width: 100%; /* Pastikan ga overflow */
+    box-sizing: border-box;
 }
 
 .main-content h2 {
@@ -74,6 +90,7 @@ main {
     font-size: 17px;
     font-family: 'SF Pro Text', sans-serif;
     transition: border-color 0.2s ease;
+    box-sizing: border-box;
 }
 
 #note-title:focus {
@@ -99,6 +116,7 @@ main {
     font-family: 'SF Pro Text', sans-serif;
     line-height: 1.4;
     transition: border-color 0.2s ease;
+    box-sizing: border-box;
 }
 
 #note-content:focus {
@@ -132,14 +150,16 @@ main {
 }
 
 #search-input {
-    width: 100%;
+    width: calc(100% - 32px); /* Kurangi padding biar ga overflow */
     padding: 12px 16px;
+    margin: 0 16px 16px 16px; /* Margin biar rapi */
     border: 1px solid #38444D;
     border-radius: 10px;
     background-color: #1E2A3C;
     color: #D9D9D9;
     font-size: 17px;
     font-family: 'SF Pro Text', sans-serif;
+    box-sizing: border-box; /* Pastikan padding dihitung dalam width */
 }
 
 #search-input::placeholder {
@@ -382,5 +402,14 @@ footer {
     
     #view-note {
         padding: 15px;
+    }
+    
+    .logo {
+        width: 28px; /* Kecilkan logo di mobile */
+        height: 28px;
+    }
+    
+    h1 {
+        font-size: 20px; /* Kecilkan teks di mobile */
     }
 }
