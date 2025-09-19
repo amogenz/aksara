@@ -17,18 +17,20 @@ function saveNotes() {
     localStorage.setItem('notes', JSON.stringify(notes));
 }
 
-// Fungsi untuk encode catatan ke base64 dengan dukungan Unicode penuh
+// Fungsi untuk encode catatan ke base64
 function encodeNote(note) {
+    // Gunakan unescape dan encodeURIComponent untuk handle karakter non-ASCII seperti Arab
     const jsonString = JSON.stringify(note);
-    const encoded = btoa(unescape(encodeURIComponent(jsonString)));
-    return encoded;
+    const escaped = unescape(encodeURIComponent(jsonString));
+    return btoa(escaped);
 }
 
-// Fungsi untuk decode catatan dari base64 dengan dukungan Unicode
+// Fungsi untuk decode catatan dari base64
 function decodeNote(encoded) {
     try {
-        const decoded = decodeURIComponent(escape(atob(encoded)));
-        return JSON.parse(decoded);
+        const decoded = atob(encoded);
+        const unescaped = decodeURIComponent(escape(decoded));
+        return JSON.parse(unescaped);
     } catch (e) {
         return null;
     }
@@ -38,10 +40,6 @@ function decodeNote(encoded) {
 function generateShareLink(index) {
     const note = notes[index];
     const encoded = encodeNote(note);
-    if (encoded.length > 2000) { // Tingkatkan limit untuk catatan lebih panjang
-        alert('Catatan terlalu panjang untuk dibagikan via URL! Coba pendekkan atau gunakan metode lain.');
-        return null;
-    }
     return `${window.location.origin}${window.location.pathname}?view=${index}&data=${encodeURIComponent(encoded)}`;
 }
 
@@ -106,16 +104,15 @@ notesList.addEventListener('click', (e) => {
     } else if (e.target.classList.contains('share-btn')) {
         const index = parseInt(e.target.dataset.index);
         const shareLink = generateShareLink(index);
-        if (shareLink) {
-            navigator.clipboard.writeText(shareLink)
-                .then(() => {
-                    alert('Tautan telah disalin ke clipboard! Bagikan ke orang lain untuk melihat catatan sebagai pengamat.');
-                })
-                .catch(err => {
-                    console.error('Gagal menyalin: ', err);
-                    prompt('Gagal menyalin otomatis. Salin tautan ini secara manual:', shareLink);
-                });
-        }
+        // Auto-copy ke clipboard
+        navigator.clipboard.writeText(shareLink)
+            .then(() => {
+                alert('Link berhasil dicopy ke clipboard! Bagikan ke orang lain.');
+            })
+            .catch(err => {
+                console.error('Gagal copy: ', err);
+                prompt('Copy tautan ini secara manual:', shareLink);  // Fallback jika clipboard gagal
+            });
     }
 });
 
