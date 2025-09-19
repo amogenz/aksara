@@ -16,7 +16,7 @@ const yourNotesSection = document.getElementById('your-notes');
 const navButtons = document.querySelectorAll('.nav-btn');
 
 // Fungsi untuk menyimpan catatan ke localStorage
-function saveNOTES() {
+function saveNotes() {
     localStorage.setItem('notes', JSON.stringify(notes));
 }
 
@@ -68,12 +68,19 @@ function renderNotes(filteredNotes = notes, container = notesList) {
 
 // Fungsi untuk generate judul otomatis berdasarkan tanggal
 function getAutoTitle() {
-    const now = new Date();
-    return new Intl.DateTimeFormat('id-ID', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric'
-    }).format(now); // Output: "19 Sep 2025"
+    try {
+        const now = new Date();
+        const options = { day: 'numeric', month: 'short', year: 'numeric' };
+        return new Intl.DateTimeFormat('id-ID', options).format(now); // Output: "19 Sep 2025"
+    } catch (e) {
+        // Fallback manual kalau Intl gagal
+        const now = new Date();
+        const day = now.getDate();
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const month = monthNames[now.getMonth()];
+        const year = now.getFullYear();
+        return `${day} ${month} ${year}`;
+    }
 }
 
 // Tambah atau edit catatan
@@ -82,7 +89,7 @@ saveNoteBtn.addEventListener('click', () => {
     const content = noteContent.value.trim();
     
     // Jika judul kosong, kasih judul otomatis
-    if (!title) {
+    if (title === '') {
         title = getAutoTitle();
     }
     
@@ -99,6 +106,7 @@ saveNoteBtn.addEventListener('click', () => {
         renderNotes(notes, notesList);
         noteTitle.value = '';
         noteContent.value = '';
+        showSection('your-notes'); // Kembali ke Catatan Anda setelah simpan
     } else {
         alert('Isi catatan tidak boleh kosong!');
     }
