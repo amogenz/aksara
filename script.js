@@ -14,6 +14,7 @@ const createNoteSection = document.getElementById('create-note');
 const searchNotesSection = document.getElementById('search-notes');
 const yourNotesSection = document.getElementById('your-notes');
 const navButtons = document.querySelectorAll('.nav-btn');
+const homeLink = document.querySelector('.home-link');
 
 // Fungsi untuk menyimpan catatan ke localStorage
 function saveNotes() {
@@ -48,22 +49,31 @@ function generateShareLink(index) {
 // Fungsi untuk menampilkan catatan dengan preview
 function renderNotes(filteredNotes = notes, container = notesList) {
     container.innerHTML = '';
-    filteredNotes.forEach((note, index) => {
-        const noteCard = document.createElement('div');
-        noteCard.classList.add('note-card');
-        const previewText = note.content.length > 150 ? note.content.substring(0, 150) + '...' : note.content;
-        noteCard.innerHTML = `
-            <h3>${note.title}</h3>
-            <p class="note-preview">${previewText}</p>
-            <p class="full-content">${note.content}</p>
-            <div class="note-actions">
-                <button class="edit-btn" data-index="${index}">Edit</button>
-                <button class="delete-btn" data-index="${index}">Hapus</button>
-                <button class="share-btn" data-index="${index}">Share</button>
+    if (filteredNotes.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <p>Anda belum menulis apapun</p>
+                <button class="cta-btn" data-section="create-note">Tulis Catatan Sekarang</button>
             </div>
         `;
-        container.appendChild(noteCard);
-    });
+    } else {
+        filteredNotes.forEach((note, index) => {
+            const noteCard = document.createElement('div');
+            noteCard.classList.add('note-card');
+            const previewText = note.content.length > 150 ? note.content.substring(0, 150) + '...' : note.content;
+            noteCard.innerHTML = `
+                <h3>${note.title}</h3>
+                <p class="note-preview">${previewText}</p>
+                <p class="full-content">${note.content}</p>
+                <div class="note-actions">
+                    <button class="edit-btn" data-index="${index}">Edit</button>
+                    <button class="delete-btn" data-index="${index}">Hapus</button>
+                    <button class="share-btn" data-index="${index}">Share</button>
+                </div>
+            `;
+            container.appendChild(noteCard);
+        });
+    }
 }
 
 // Fungsi untuk generate judul otomatis berdasarkan tanggal
@@ -98,7 +108,7 @@ saveNoteBtn.addEventListener('click', () => {
             const index = parseInt(saveNoteBtn.dataset.editingIndex);
             notes[index] = { title, content };
             delete saveNoteBtn.dataset.editingIndex;
-            saveNoteBtn.textContent = 'Simpan Catatan';
+            saveNoteBtn.textContent = 'Simpan';
         } else {
             notes.push({ title, content });
         }
@@ -124,7 +134,7 @@ document.addEventListener('click', (e) => {
                 noteTitle.value = notes[index].title;
                 noteContent.value = notes[index].content;
                 saveNoteBtn.dataset.editingIndex = index;
-                saveNoteBtn.textContent = 'Update Catatan';
+                saveNoteBtn.textContent = 'Update';
                 showSection('create-note');
             } else if (target.classList.contains('delete-btn')) {
                 const index = parseInt(target.dataset.index);
@@ -155,6 +165,8 @@ document.addEventListener('click', (e) => {
             // Toggle preview/full jika klik di luar aksi (judul, preview, atau card)
             card.classList.toggle('expanded');
         }
+    } else if (target.closest('.cta-btn')) {
+        showSection('create-note');
     }
 });
 
@@ -194,6 +206,12 @@ navButtons.forEach(btn => {
     btn.addEventListener('click', () => {
         showSection(btn.dataset.section);
     });
+});
+
+// Event listener untuk home link (logo + Aksara)
+homeLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    showSection('your-notes');
 });
 
 // Cek apakah ada parameter view di URL
