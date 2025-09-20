@@ -113,11 +113,14 @@ function renderNotes(filteredNotes = notes, container = notesList) {
 function loadNotes() {
     const user = auth.currentUser;
     if (user) {
+        console.log('Loading notes for user:', user.uid);
         db.collection('notes')
             .where('userId', '==', user.uid)
             .orderBy('timestamp', 'desc')
             .onSnapshot((snapshot) => {
+                console.log('Firestore snapshot received:', snapshot.docs.length, 'docs');
                 notes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                console.log('Notes data:', notes);
                 renderNotes(notes, notesList);
                 const query = searchInput.value.toLowerCase();
                 const filtered = notes.filter(note =>
@@ -126,9 +129,12 @@ function loadNotes() {
                 );
                 renderNotes(filtered, searchResults);
             }, (error) => {
-                console.error('Error loading notes:', error);
-                alert('Gagal memuat catatan. Cek koneksi atau login ulang.');
+                console.error('Error loading notes:', error.code, error.message);
+                alert('Gagal memuat catatan: ' + error.message);
             });
+    } else {
+        console.error('No user logged in');
+        showAuthModal();
     }
 }
 
