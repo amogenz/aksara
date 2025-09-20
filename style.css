@@ -1,7 +1,7 @@
-/* Tema temaram ala Twitter/X: Dark mode, minimalis dengan aksen biru */
+/* Tema temaram ala iOS Notes: Dark mode, minimalis dengan aksen kuning */
 body {
     background-color: #15202B; /* Abu gelap Twitter */
-    color: #D9D9D9; /* Teks abu terang */
+    color: #D2D2D7; /* Abu terang iOS */
     font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0;
     padding: 20px;
@@ -40,13 +40,13 @@ h1 {
     font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-weight: 700;
     font-size: 24px; /* Kecilkan biar nyaman */
-    color: #1DA1F2; /* Aksen biru Twitter */
+    color: #F7C948; /* Aksen kuning iOS Notes */
     margin: 0;
 }
 
 .tagline {
     font-size: 14px;
-    color: #6B7280; /* Abu redup */
+    color: #8E8E93; /* Abu iOS */
     font-style: italic;
     margin: 5px 0 0 0;
 }
@@ -70,6 +70,7 @@ main {
     max-width: 600px; /* Lebar form sama dengan card lain */
     margin: 0 auto;
     padding: 20px 0; /* Minimal padding, no box */
+    position: relative; /* Untuk posisi tombol Done */
 }
 
 #create-note .form-group {
@@ -81,36 +82,36 @@ main {
 #note-title {
     padding: 8px 0;
     border: none;
-    border-bottom: 2px solid #38444D; /* Border bawah minimal */
+    border-bottom: 1px solid #D2D2D7; /* Border bawah iOS */
     background: transparent; /* No box */
-    color: #D9D9D9;
-    font-size: 16px;
+    color: #D2D2D7;
+    font-size: 17px;
     font-family: 'SF Pro Text', sans-serif;
     transition: border-color 0.2s ease;
 }
 
 #note-title:focus {
     outline: none;
-    border-color: #1DA1F2; /* Glow biru pas fokus */
+    border-color: #F7C948; /* Glow kuning iOS */
 }
 
 #note-title::placeholder {
-    color: #6B7280;
-    font-style: italic;
+    color: #8E8E93;
+    font-style: normal; /* iOS Notes ga italic */
 }
 
 #note-title:hover {
-    border-color: #5A6B7A; /* Feedback hover */
+    border-color: #AEAEB2; /* Feedback hover */
 }
 
 #note-content {
     padding: 8px 0;
     border: none;
-    border-bottom: 2px solid #38444D;
+    border-bottom: 1px solid #D2D2D7;
     background: transparent;
-    color: #D9D9D9;
-    font-size: 16px;
-    height: 120px; /* Lebih kecil, clean */
+    color: #D2D2D7;
+    font-size: 17px;
+    height: 150px; /* Sedikit lebih tinggi ala iOS */
     resize: vertical;
     font-family: 'SF Pro Text', sans-serif;
     line-height: 1.4;
@@ -119,41 +120,44 @@ main {
 
 #note-content:focus {
     outline: none;
-    border-color: #1DA1F2;
+    border-color: #F7C948;
 }
 
 #note-content::placeholder {
-    color: #6B7280;
-    font-style: italic;
+    color: #8E8E93;
+    font-style: normal;
 }
 
 #note-content:hover {
-    border-color: #5A6B7A;
+    border-color: #AEAEB2;
 }
 
 #save-note {
-    padding: 8px 16px; /* Kecil, minimalis */
-    background-color: #1DA1F2;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 50px; /* Bulat */
+    position: absolute;
+    top: 20px;
+    right: 0;
+    padding: 6px 12px; /* Kecil ala iOS */
+    background-color: transparent;
+    color: #F7C948; /* Kuning iOS */
+    border: 1px solid #F7C948;
+    border-radius: 20px; /* Bulat halus */
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 600;
     font-family: 'SF Pro Text', sans-serif;
-    align-self: flex-end;
 }
 
 #save-note:hover {
-    background-color: #1A91DA;
+    background-color: #F7C948;
+    color: #000000; /* Hitam biar kontras */
     transform: scale(1.05);
 }
 
 .empty-state {
     text-align: center;
     padding: 40px 20px;
-    color: #6B7280;
+    color: #8E8E93;
     font-size: 16px;
     font-style: italic;
     font-family: 'SF Pro Text', sans-serif;
@@ -165,10 +169,10 @@ main {
 
 .cta-btn {
     padding: 8px 16px;
-    background-color: #1DA1F2;
-    color: #FFFFFF;
+    background-color: #F7C948;
+    color: #000000;
     border: none;
-    border-radius: 50px;
+    border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 14px;
@@ -177,7 +181,7 @@ main {
 }
 
 .cta-btn:hover {
-    background-color: #1A91DA;
+    background-color: #E1B740;
     transform: scale(1.05);
 }
 
@@ -185,17 +189,17 @@ main {
     width: calc(100% - 32px);
     padding: 12px 16px;
     margin: 0 16px 16px 16px;
-    border: 1px solid #38444D;
+    border: 1px solid #D2D2D7;
     border-radius: 10px;
     background-color: #1E2A3C;
-    color: #D9D9D9;
+    color: #D2D2D7;
     font-size: 17px;
     font-family: 'SF Pro Text', sans-serif;
     box-sizing: border-box;
 }
 
 #search-input::placeholder {
-    color: #6B7280;
+    color: #8E8E93;
 }
 
 #search-results {
@@ -214,7 +218,7 @@ main {
     border-radius: 10px;
     margin-bottom: 10px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    border-bottom: 1px solid #38444D;
+    border-bottom: 1px solid #D2D2D7;
     transition: all 0.3s ease;
     cursor: pointer;
     min-height: 100px;
@@ -226,14 +230,14 @@ main {
     font-family: 'SF Pro Display', sans-serif;
     font-weight: 600;
     font-size: 20px;
-    color: #1DA1F2;
+    color: #F7C948; /* Kuning iOS */
     cursor: pointer;
 }
 
 .note-card .note-preview {
     margin: 0 0 15px 0;
     font-size: 16px;
-    color: #D9D9D9;
+    color: #D2D2D7;
     line-height: 1.4;
     white-space: pre-wrap;
     display: -webkit-box;
@@ -246,7 +250,7 @@ main {
 .note-card .full-content {
     margin: 0 0 15px 0;
     font-size: 16px;
-    color: #D9D9D9;
+    color: #D2D2D7;
     line-height: 1.4;
     white-space: pre-wrap;
     display: none;
@@ -280,12 +284,12 @@ main {
 }
 
 .edit-btn {
-    background-color: #1DA1F2;
-    color: #FFFFFF;
+    background-color: #F7C948;
+    color: #000000;
 }
 
 .edit-btn:hover {
-    background-color: #1A91DA;
+    background-color: #E1B740;
 }
 
 .delete-btn {
@@ -298,19 +302,19 @@ main {
 }
 
 .share-btn {
-    background-color: #1DA1F2;
-    color: #FFFFFF;
+    background-color: #F7C948;
+    color: #000000;
 }
 
 .share-btn:hover {
-    background-color: #1A91DA;
+    background-color: #E1B740;
 }
 
 #view-only h2 {
     font-family: 'SF Pro Display', sans-serif;
     font-weight: 600;
     font-size: 24px;
-    color: #1DA1F2;
+    color: #F7C948;
     margin-bottom: 20px;
 }
 
@@ -327,13 +331,13 @@ main {
     font-family: 'SF Pro Display', sans-serif;
     font-weight: 600;
     font-size: 20px;
-    color: #1DA1F2;
+    color: #F7C948;
 }
 
 #view-note p {
     margin: 0 0 15px 0;
     font-size: 16px;
-    color: #D9D9D9;
+    color: #D2D2D7;
     line-height: 1.4;
 }
 
@@ -346,7 +350,7 @@ main {
 
 .like-btn {
     background-color: transparent;
-    color: #1DA1F2;
+    color: #F7C948;
     display: flex;
     align-items: center;
     gap: 5px;
@@ -358,16 +362,16 @@ main {
 }
 
 .like-btn:hover {
-    background-color: rgba(29, 161, 242, 0.1);
+    background-color: rgba(247, 201, 72, 0.1);
 }
 
 .copy-btn {
-    background-color: #1DA1F2;
-    color: #FFFFFF;
+    background-color: #F7C948;
+    color: #000000;
 }
 
 .copy-btn:hover {
-    background-color: #1A91DA;
+    background-color: #E1B740;
 }
 
 .bottom-nav {
@@ -386,7 +390,7 @@ main {
 .nav-btn {
     background-color: transparent;
     border: none;
-    color: #D9D9D9;
+    color: #D2D2D7;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -399,12 +403,12 @@ main {
 }
 
 .nav-btn.active {
-    color: #1DA1F2;
-    border-bottom: 3px solid #1DA1F2;
+    color: #F7C948;
+    border-bottom: 3px solid #F7C948;
 }
 
 .nav-btn:hover {
-    color: #1DA1F2;
+    color: #F7C948;
     transform: scale(1.1);
 }
 
@@ -412,11 +416,11 @@ footer {
     text-align: center;
     margin-top: 40px;
     font-size: 14px;
-    color: #6B7280;
+    color: #8E8E93;
     font-family: 'SF Pro Text', sans-serif;
 }
 
-/* Responsif: Mirip Twitter mobile */
+/* Responsif: Mirip iOS Notes mobile */
 @media (max-width: 600px) {
     body {
         padding: 10px;
@@ -455,13 +459,13 @@ footer {
     }
     
     #note-title, #note-content {
-        font-size: 15px;
+        font-size: 16px;
         padding: 6px 0;
     }
     
     #save-note, .cta-btn {
-        padding: 6px 12px;
-        font-size: 13px;
+        padding: 5px 10px;
+        font-size: 14px;
     }
     
     .empty-state {
