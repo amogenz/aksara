@@ -81,7 +81,7 @@ function getAutoTitle() {
     try {
         const now = new Date();
         const options = { day: 'numeric', month: 'short', year: 'numeric' };
-        return new Intl.DateTimeFormat('id-ID', options).format(now); // Output: "19 Sep 2025"
+        return new Intl.DateTimeFormat('id-ID', options).format(now); // Output: "20 Sep 2025"
     } catch (e) {
         // Fallback manual kalau Intl gagal
         const now = new Date();
@@ -108,7 +108,7 @@ saveNoteBtn.addEventListener('click', () => {
             const index = parseInt(saveNoteBtn.dataset.editingIndex);
             notes[index] = { title, content };
             delete saveNoteBtn.dataset.editingIndex;
-            saveNoteBtn.textContent = 'Simpan';
+            saveNoteBtn.textContent = 'Done';
         } else {
             notes.push({ title, content });
         }
@@ -134,7 +134,7 @@ document.addEventListener('click', (e) => {
                 noteTitle.value = notes[index].title;
                 noteContent.value = notes[index].content;
                 saveNoteBtn.dataset.editingIndex = index;
-                saveNoteBtn.textContent = 'Update';
+                saveNoteBtn.textContent = 'Done';
                 showSection('create-note');
             } else if (target.classList.contains('delete-btn')) {
                 const index = parseInt(target.dataset.index);
@@ -196,6 +196,7 @@ function showSection(sectionId) {
     searchNotesSection.style.display = sectionId === 'search-notes' ? 'block' : 'none';
     yourNotesSection.style.display = sectionId === 'your-notes' ? 'block' : 'none';
     viewOnlySection.style.display = sectionId === 'view-only' ? 'block' : 'none';
+    saveNoteBtn.style.display = sectionId === 'create-note' ? 'block' : 'none'; // Show/hide Done button
     navButtons.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.section === sectionId);
     });
