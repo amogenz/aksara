@@ -14,7 +14,7 @@ header {
     display: flex;
     flex-direction: column;
     align-items: flex-start; /* Align kiri */
-    margin-bottom: 20px; /* Kurangin margin tanpa tagline */
+    margin-bottom: 20px; /* Kompak tanpa tagline */
 }
 
 .header-actions {
@@ -70,6 +70,84 @@ h1 {
     background-color: #F7C948;
     color: #000000; /* Hitam biar kontras */
     transform: scale(1.05);
+}
+
+#auth-btn {
+    position: absolute;
+    top: 10px;
+    right: 80px; /* Geser kiri biar ga nabrak Done */
+    padding: 6px 12px;
+    background-color: transparent;
+    color: #F7C948;
+    border: 1px solid #F7C948;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'SF Pro Text', sans-serif;
+}
+
+#auth-btn:hover {
+    background-color: #F7C948;
+    color: #000000;
+    transform: scale(1.05);
+}
+
+#auth-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+
+.modal-content {
+    background-color: #1E2A3C;
+    padding: 20px;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-content h2 {
+    font-family: 'SF Pro Display', sans-serif;
+    font-size: 20px;
+    color: #F7C948;
+    margin: 0 0 10px 0;
+}
+
+.modal-content input {
+    padding: 8px;
+    border: 1px solid #D2D2D7;
+    border-radius: 8px;
+    background-color: #15202B;
+    color: #D2D2D7;
+    font-size: 16px;
+    font-family: 'SF Pro Text', sans-serif;
+}
+
+.modal-content button {
+    padding: 8px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-family: 'SF Pro Text', sans-serif;
+    background-color: #F7C948;
+    color: #000000;
+}
+
+.modal-content button:hover {
+    background-color: #E1B740;
 }
 
 main {
@@ -457,7 +535,7 @@ footer {
         padding: 6px 0;
     }
     
-    #save-note, .cta-btn {
+    #save-note, .cta-btn, #auth-btn {
         padding: 5px 10px;
         font-size: 14px;
     }
@@ -465,5 +543,10 @@ footer {
     .empty-state {
         padding: 20px 10px;
         font-size: 14px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 15px;
     }
 }
