@@ -20,6 +20,10 @@
                     <h1>Aksara</h1>
                 </div>
             </a>
+
+            <!-- Center quote (shown when editor / create-note active) -->
+            <div class="header-center-quote">yang kau hafal akan pergi, yang kau tulis akan abadi</div>
+
             <button id="save-note" style="display: none;">Done</button>
         </div>
     </header>
@@ -28,6 +32,17 @@
         <!-- CREATE NOTE: iOS-like full screen editor -->
         <div id="create-note" style="display: none;">
             <div class="ios-note-editor" role="dialog" aria-label="Editor Catatan">
+                <!-- Header inside editor (same look as global header) -->
+                <div class="editor-header">
+                    <a href="#" class="home-link">
+                        <div class="logo-container">
+                            <img src="https://i.imgur.com/Ct0pzwl.png" alt="Aksara Logo" class="logo">
+                            <h1>Aksara</h1>
+                        </div>
+                    </a>
+                    <div class="editor-header-center-quote">yang kau hafal akan pergi, yang kau tulis akan abadi</div>
+                </div>
+
                 <div class="editor-topbar">
                     <button class="editor-cancel" aria-label="Batal">Batal</button>
                     <div class="editor-title-center">Catatan Baru</div>
