@@ -34,7 +34,6 @@ function saveNotes() {
 // Fungsi untuk encode catatan ke base64
 function encodeNote(note) {
     const jsonString = JSON.stringify(note);
-    // Aman untuk UTF-8: gunakan encodeURIComponent sebelum btoa
     return btoa(encodeURIComponent(jsonString));
 }
 
@@ -91,9 +90,8 @@ function getAutoTitle() {
     try {
         const now = new Date();
         const options = { day: 'numeric', month: 'short', year: 'numeric' };
-        return new Intl.DateTimeFormat('id-ID', options).format(now); // Output: "20 Sep 2025"
+        return new Intl.DateTimeFormat('id-ID', options).format(now);
     } catch (e) {
-        // Fallback manual kalau Intl gagal
         const now = new Date();
         const day = now.getDate();
         const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -113,15 +111,11 @@ function updateNotesCount() {
     }
 }
 
-// Save / Update note logic (refactor dari handler sebelumnya)
+// Save / Update note logic
 function saveCurrentNote() {
     let title = noteTitle.value.trim();
     const content = noteContent.value.trim();
-
-    // Jika judul kosong, kasih judul otomatis
-    if (title === '') {
-        title = getAutoTitle();
-    }
+    if (title === '') title = getAutoTitle();
 
     if (content) {
         if ('editingIndex' in saveNoteBtn.dataset && saveNoteBtn.dataset.editingIndex !== '') {
@@ -138,23 +132,21 @@ function saveCurrentNote() {
         noteTitle.value = '';
         noteContent.value = '';
         setEditorOpen(false);
-        showSection('your-notes'); // Kembali ke Catatan Anda setelah simpan
+        showSection('your-notes');
     } else {
         alert('Isi catatan tidak boleh kosong!');
     }
 }
 
-// Hook save button (keamanan backward compat)
+// Hook save button
 saveNoteBtn.addEventListener('click', saveCurrentNote);
 
-// Event delegation untuk edit, hapus, share, dan toggle preview/full
+// Event delegation untuk edit, hapus, share, cancel, done
 document.addEventListener('click', (e) => {
     const target = e.target;
     const card = target.closest('.note-card');
 
-    // Editor topbar buttons (Batal / Selesai)
-    if (target.classList && target.classList.contains('editor-cancel')) {
-        // Jika ada tulisan, minta konfirmasi
+    if (target.classList.contains('editor-cancel')) {
         if (noteTitle.value.trim() !== '' || noteContent.value.trim() !== '') {
             if (confirm('Batal dan buang perubahan?')) {
                 noteTitle.value = '';
@@ -168,14 +160,13 @@ document.addEventListener('click', (e) => {
             showSection('your-notes');
         }
         return;
-    } else if (target.classList && target.classList.contains('editor-done')) {
+    } else if (target.classList.contains('editor-done')) {
         saveCurrentNote();
         return;
     }
 
     if (card) {
         if (target.closest('.note-actions')) {
-            // Handle tombol aksi
             if (target.classList.contains('edit-btn')) {
                 const index = parseInt(target.dataset.index);
                 noteTitle.value = notes[index].title;
@@ -184,10 +175,8 @@ document.addEventListener('click', (e) => {
                 saveNoteBtn.textContent = 'Done';
                 showSection('create-note');
                 setEditorOpen(true);
-                // focus the title for editing
                 setTimeout(() => {
                     noteTitle.focus();
-                    // move cursor to end
                     noteTitle.selectionStart = noteTitle.selectionEnd = noteTitle.value.length;
                 }, 100);
             } else if (target.classList.contains('delete-btn')) {
@@ -197,19 +186,13 @@ document.addEventListener('click', (e) => {
                     saveNotes();
                     renderNotes(notes, notesList);
                     updateNotesCount();
-                    const query = searchInput.value.toLowerCase();
-                    const filtered = notes.filter(note => 
-                        note.title.toLowerCase().includes(query) || 
-                        note.content.toLowerCase().includes(query)
-                    );
-                    renderNotes(filtered, searchResults);
                 }
             } else if (target.classList.contains('share-btn')) {
                 const index = parseInt(target.dataset.index);
                 const shareLink = generateShareLink(index);
                 navigator.clipboard.writeText(shareLink)
                     .then(() => {
-                        alert('Link berhasil dicopy ke clipboard! Bagikan ke orang lain.');
+                        alert('Link berhasil dicopy ke clipboard!');
                     })
                     .catch(err => {
                         console.error('Gagal copy: ', err);
@@ -217,13 +200,11 @@ document.addEventListener('click', (e) => {
                     });
             }
         } else {
-            // Toggle preview/full jika klik di luar aksi (judul, preview, atau card)
             card.classList.toggle('expanded');
         }
     } else if (target.closest('.cta-btn')) {
         showSection('create-note');
         setEditorOpen(true);
-        // focus editor fields
         setTimeout(() => {
             noteTitle.focus();
         }, 150);
@@ -242,27 +223,16 @@ if (searchInput) {
     });
 }
 
-// Fungsi untuk mengelola likes di localStorage
-function getLikes(index) {
-    const likes = localStorage.getItem(`likes_${index}`);
-    return likes ? parseInt(likes) : 0;
-}
-
-function setLikes(index, count) {
-    localStorage.setItem(`likes_${index}`, count);
-}
-
 // Fungsi untuk menampilkan section tertentu
 function showSection(sectionId) {
     createNoteSection.style.display = sectionId === 'create-note' ? 'block' : 'none';
     searchNotesSection.style.display = sectionId === 'search-notes' ? 'block' : 'none';
     yourNotesSection.style.display = sectionId === 'your-notes' ? 'block' : 'none';
     viewOnlySection.style.display = sectionId === 'view-only' ? 'block' : 'none';
-    saveNoteBtn.style.display = sectionId === 'create-note' ? 'block' : 'none'; // Show/hide Done button
+    saveNoteBtn.style.display = sectionId === 'create-note' ? 'block' : 'none';
     navButtons.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.section === sectionId);
     });
-    // If opening create-note, add editor-open class for nicer UX
     if (sectionId === 'create-note') {
         setEditorOpen(true);
     } else {
@@ -277,7 +247,7 @@ navButtons.forEach(btn => {
     });
 });
 
-// Event listener untuk home link (logo + Aksara) - attach to all home links
+// Event listener untuk home link
 homeLinks.forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -285,61 +255,50 @@ homeLinks.forEach(link => {
     });
 });
 
-// Cek apakah ada parameter view di URL
-function checkViewMode() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const viewIndex = urlParams.get('view');
-    const encodedData = urlParams.get('data');
-    if (viewIndex !== null && encodedData !== null) {
-        const note = decodeNote(decodeURIComponent(encodedData));
-        if (note) {
-            createNoteSection.style.display = 'none';
-            searchNotesSection.style.display = 'none';
-            yourNotesSection.style.display = 'none';
-            viewOnlySection.style.display = 'block';
-            document.querySelector('.bottom-nav').style.display = 'none'; // Sembunyikan navbar di view-only
-            const likes = getLikes(viewIndex);
-            viewNote.innerHTML = `
-                <h3>${note.title}</h3>
-                <p>${note.content}</p>
-                <div class="note-actions">
-                    <button class="like-btn" data-index="${viewIndex}">
-                        <span class="heart-icon">❤️</span> ${likes} Likes
-                    </button>
-                    <button class="copy-btn">Copy Teks</button>
-                </div>
-            `;
-            viewNote.addEventListener('click', (e) => {
-                if (e.target.classList.contains('like-btn') || e.target.parentElement.classList.contains('like-btn')) {
-                    const btn = e.target.classList.contains('like-btn') ? e.target : e.target.parentElement;
-                    const index = parseInt(btn.dataset.index);
-                    const isLiked = btn.classList.contains('liked');
-                    const currentLikes = getLikes(index);
-                    const newLikes = isLiked ? currentLikes - 1 : currentLikes + 1;
-                    setLikes(index, newLikes);
-                    btn.classList.toggle('liked');
-                    btn.innerHTML = `<span class="heart-icon">❤️</span> ${newLikes} Likes`;
-                } else if (e.target.classList.contains('copy-btn')) {
-                    navigator.clipboard.writeText(note.content)
-                        .then(() => {
-                            alert('Teks catatan berhasil dicopy ke clipboard!');
-                        })
-                        .catch(err => {
-                            console.error('Gagal copy: ', err);
-                            prompt('Copy teks ini secara manual:', note.content);
-                        });
-                }
-            });
-        } else {
-            viewNote.innerHTML = '<p>Catatan tidak valid atau rusak.</p>';
-        }
-    } else {
-        showSection('your-notes'); // Default ke Catatan Anda
-        renderNotes(notes, notesList);
-        updateNotesCount();
+// --- FONT PICKER ---
+const fontBtn = document.getElementById('font-btn');
+const fontDropdown = document.getElementById('font-dropdown');
+
+if (fontBtn && fontDropdown) {
+    fontBtn.addEventListener('click', () => {
+        fontDropdown.style.display = fontDropdown.style.display === 'none' ? 'block' : 'none';
+    });
+
+    fontDropdown.addEventListener('change', () => {
+        const font = fontDropdown.value;
+        noteContent.style.fontFamily = font;
+        noteTitle.style.fontFamily = font;
+        localStorage.setItem('preferredFont', font);
+        fontDropdown.style.display = 'none';
+    });
+
+    const savedFont = localStorage.getItem('preferredFont');
+    if (savedFont) {
+        noteContent.style.fontFamily = savedFont;
+        noteTitle.style.fontFamily = savedFont;
+        fontDropdown.value = savedFont;
     }
 }
 
-// Jalankan cek view mode saat halaman dimuat
+// --- AUTO SAVE ---
+[noteTitle, noteContent].forEach(el => {
+    el.addEventListener('input', () => {
+        let title = noteTitle.value.trim() || getAutoTitle();
+        let content = noteContent.value.trim();
+        let index = saveNoteBtn.dataset.editingIndex;
+        if (content) {
+            if (index !== undefined && index !== '') {
+                notes[index] = { title, content };
+            } else {
+                notes[notes.length - 1] = { title, content };
+            }
+            saveNotes();
+            renderNotes(notes, notesList);
+            updateNotesCount();
+        }
+    });
+});
+
+// Jalankan awal
 updateNotesCount();
-checkViewMode();
+renderNotes(notes, notesList);
