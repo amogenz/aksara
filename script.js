@@ -14,7 +14,7 @@ const createNoteSection = document.getElementById('create-note');
 const searchNotesSection = document.getElementById('search-notes');
 const yourNotesSection = document.getElementById('your-notes');
 const navButtons = document.querySelectorAll('.nav-btn');
-const homeLink = document.querySelector('.home-link');
+const homeLinks = document.querySelectorAll('.home-link');
 const notesCountEl = document.getElementById('notes-count');
 
 // Helper: set body class when editor open
@@ -277,10 +277,12 @@ navButtons.forEach(btn => {
     });
 });
 
-// Event listener untuk home link (logo + Aksara)
-homeLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    showSection('your-notes');
+// Event listener untuk home link (logo + Aksara) - attach to all home links
+homeLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        showSection('your-notes');
+    });
 });
 
 // Cek apakah ada parameter view di URL
