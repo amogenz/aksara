@@ -15,6 +15,16 @@ const searchNotesSection = document.getElementById('search-notes');
 const yourNotesSection = document.getElementById('your-notes');
 const navButtons = document.querySelectorAll('.nav-btn');
 const homeLink = document.querySelector('.home-link');
+const notesCountEl = document.getElementById('notes-count');
+
+// Helper: set body class when editor open
+function setEditorOpen(open) {
+    if (open) {
+        document.body.classList.add('editor-open');
+    } else {
+        document.body.classList.remove('editor-open');
+    }
+}
 
 // Fungsi untuk menyimpan catatan ke localStorage
 function saveNotes() {
@@ -24,16 +34,16 @@ function saveNotes() {
 // Fungsi untuk encode catatan ke base64
 function encodeNote(note) {
     const jsonString = JSON.stringify(note);
-    const escaped = unescape(encodeURIComponent(jsonString));
-    return btoa(escaped);
+    // Aman untuk UTF-8: gunakan encodeURIComponent sebelum btoa
+    return btoa(encodeURIComponent(jsonString));
 }
 
 // Fungsi untuk decode catatan dari base64
 function decodeNote(encoded) {
     try {
         const decoded = atob(encoded);
-        const unescaped = decodeURIComponent(escape(decoded));
-        return JSON.parse(unescaped);
+        const jsonString = decodeURIComponent(decoded);
+        return JSON.parse(jsonString);
     } catch (e) {
         return null;
     }
@@ -93,18 +103,28 @@ function getAutoTitle() {
     }
 }
 
-// Tambah atau edit catatan
-saveNoteBtn.addEventListener('click', () => {
+// Update notes count dan search placeholder
+function updateNotesCount() {
+    if (notesCountEl) {
+        notesCountEl.textContent = notes.length;
+    }
+    if (searchInput) {
+        searchInput.placeholder = notes.length > 0 ? `Cari dalam ${notes.length} catatan...` : 'Cari catatan...';
+    }
+}
+
+// Save / Update note logic (refactor dari handler sebelumnya)
+function saveCurrentNote() {
     let title = noteTitle.value.trim();
     const content = noteContent.value.trim();
-    
+
     // Jika judul kosong, kasih judul otomatis
     if (title === '') {
         title = getAutoTitle();
     }
-    
+
     if (content) {
-        if (saveNoteBtn.dataset.editingIndex !== undefined) {
+        if ('editingIndex' in saveNoteBtn.dataset && saveNoteBtn.dataset.editingIndex !== '') {
             const index = parseInt(saveNoteBtn.dataset.editingIndex);
             notes[index] = { title, content };
             delete saveNoteBtn.dataset.editingIndex;
@@ -114,18 +134,45 @@ saveNoteBtn.addEventListener('click', () => {
         }
         saveNotes();
         renderNotes(notes, notesList);
+        updateNotesCount();
         noteTitle.value = '';
         noteContent.value = '';
+        setEditorOpen(false);
         showSection('your-notes'); // Kembali ke Catatan Anda setelah simpan
     } else {
         alert('Isi catatan tidak boleh kosong!');
     }
-});
+}
+
+// Hook save button (keamanan backward compat)
+saveNoteBtn.addEventListener('click', saveCurrentNote);
 
 // Event delegation untuk edit, hapus, share, dan toggle preview/full
 document.addEventListener('click', (e) => {
     const target = e.target;
     const card = target.closest('.note-card');
+
+    // Editor topbar buttons (Batal / Selesai)
+    if (target.classList && target.classList.contains('editor-cancel')) {
+        // Jika ada tulisan, minta konfirmasi
+        if (noteTitle.value.trim() !== '' || noteContent.value.trim() !== '') {
+            if (confirm('Batal dan buang perubahan?')) {
+                noteTitle.value = '';
+                noteContent.value = '';
+                delete saveNoteBtn.dataset.editingIndex;
+                setEditorOpen(false);
+                showSection('your-notes');
+            }
+        } else {
+            setEditorOpen(false);
+            showSection('your-notes');
+        }
+        return;
+    } else if (target.classList && target.classList.contains('editor-done')) {
+        saveCurrentNote();
+        return;
+    }
+
     if (card) {
         if (target.closest('.note-actions')) {
             // Handle tombol aksi
@@ -136,12 +183,20 @@ document.addEventListener('click', (e) => {
                 saveNoteBtn.dataset.editingIndex = index;
                 saveNoteBtn.textContent = 'Done';
                 showSection('create-note');
+                setEditorOpen(true);
+                // focus the title for editing
+                setTimeout(() => {
+                    noteTitle.focus();
+                    // move cursor to end
+                    noteTitle.selectionStart = noteTitle.selectionEnd = noteTitle.value.length;
+                }, 100);
             } else if (target.classList.contains('delete-btn')) {
                 const index = parseInt(target.dataset.index);
                 if (confirm('Yakin ingin hapus catatan ini?')) {
                     notes.splice(index, 1);
                     saveNotes();
                     renderNotes(notes, notesList);
+                    updateNotesCount();
                     const query = searchInput.value.toLowerCase();
                     const filtered = notes.filter(note => 
                         note.title.toLowerCase().includes(query) || 
@@ -167,18 +222,25 @@ document.addEventListener('click', (e) => {
         }
     } else if (target.closest('.cta-btn')) {
         showSection('create-note');
+        setEditorOpen(true);
+        // focus editor fields
+        setTimeout(() => {
+            noteTitle.focus();
+        }, 150);
     }
 });
 
 // Fungsi search
-searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase();
-    const filtered = notes.filter(note => 
-        note.title.toLowerCase().includes(query) || 
-        note.content.toLowerCase().includes(query)
-    );
-    renderNotes(filtered, searchResults);
-});
+if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const filtered = notes.filter(note => 
+            note.title.toLowerCase().includes(query) || 
+            note.content.toLowerCase().includes(query)
+        );
+        renderNotes(filtered, searchResults);
+    });
+}
 
 // Fungsi untuk mengelola likes di localStorage
 function getLikes(index) {
@@ -200,6 +262,12 @@ function showSection(sectionId) {
     navButtons.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.section === sectionId);
     });
+    // If opening create-note, add editor-open class for nicer UX
+    if (sectionId === 'create-note') {
+        setEditorOpen(true);
+    } else {
+        setEditorOpen(false);
+    }
 }
 
 // Event listener untuk navigasi
@@ -266,8 +334,10 @@ function checkViewMode() {
     } else {
         showSection('your-notes'); // Default ke Catatan Anda
         renderNotes(notes, notesList);
+        updateNotesCount();
     }
 }
 
 // Jalankan cek view mode saat halaman dimuat
+updateNotesCount();
 checkViewMode();
