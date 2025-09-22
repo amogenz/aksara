@@ -21,18 +21,14 @@
                 </div>
             </a>
 
-            <!-- Center quote (shown when editor / create-note active) -->
-            <div class="header-center-quote">yang kau hafal akan pergi, yang kau tulis akan abadi</div>
-
             <button id="save-note" style="display: none;">Done</button>
         </div>
     </header>
     
     <main>
-        <!-- CREATE NOTE: iOS-like full screen editor -->
+        <!-- CREATE NOTE -->
         <div id="create-note" style="display: none;">
             <div class="ios-note-editor" role="dialog" aria-label="Editor Catatan">
-                <!-- Header inside editor (same look as global header) -->
                 <div class="editor-header">
                     <a href="#" class="home-link">
                         <div class="logo-container">
@@ -43,10 +39,35 @@
                 </div>
 
                 <div class="editor-topbar">
-                    <button class="editor-cancel" aria-label="Batal">Batal</button>
-                    <div class="editor-title-center">Catatan Baru</div>
-                    <button class="editor-done" aria-label="Selesai">Selesai</button>
-                </div>
+    <button class="editor-cancel" aria-label="Batal">Batal</button>
+
+    <!-- Font Picker (gantikan "Catatan Baru") -->
+    <div class="font-selector">
+        <button id="font-btn" aria-label="Pilih Font">A</button>
+        <select id="font-dropdown" style="display: none;">
+            <option value="'SF Pro Text', sans-serif">SF Pro Text</option>
+            <option value="'SF Pro Display', sans-serif">SF Pro Display</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Tahoma, sans-serif">Tahoma</option>
+            <option value="'Times New Roman', serif">Times New Roman</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+            <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+            <option value="'Comic Sans MS', cursive">Comic Sans</option>
+            <option value="'Lucida Console', monospace">Lucida Console</option>
+            <option value="'Palatino Linotype', serif">Palatino</option>
+            <option value="'Segoe UI', sans-serif">Segoe UI</option>
+            <option value="'Roboto', sans-serif">Roboto</option>
+            <option value="'Montserrat', sans-serif">Montserrat</option>
+            <option value="'Open Sans', sans-serif">Open Sans</option>
+            <option value="'Lora', serif">Lora</option>
+        </select>
+    </div>
+
+    <button class="editor-done" aria-label="Selesai">Selesai</button>
+</div>
+
 
                 <div class="editor-content">
                     <input type="text" id="note-title" class="editor-title" placeholder="Judul" />
