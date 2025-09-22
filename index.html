@@ -10,12 +10,6 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&family=SF+Pro+Text:wght@400;500&display=swap');
     </style>
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-    <script src="config.js"></script>
-    <script src="script.js"></script>
 </head>
 <body>
     <header>
@@ -27,23 +21,10 @@
                 </div>
             </a>
             <button id="save-note" style="display: none;">Done</button>
-            <button id="auth-btn">Login</button>
-        </div>
-        <!-- Modal Login -->
-        <div id="auth-modal" style="display: none;">
-            <div class="modal-content">
-                <h2>Login ke Aksara</h2>
-                <input type="email" id="email-input" placeholder="Email">
-                <input type="password" id="password-input" placeholder="Password">
-                <button id="email-login-btn">Login</button>
-                <button id="google-login-btn">Login dengan Google</button>
-                <button id="signup-btn">Daftar</button>
-                <button id="logout-btn" style="display: none;">Logout</button>
-            </div>
         </div>
     </header>
     
-    <main id="main-content" style="display: none;">
+    <main>
         <div id="create-note" style="display: none;">
             <div class="form-group">
                 <input type="text" id="note-title" placeholder="Judul catatan (opsional)">
@@ -73,7 +54,7 @@
         </section>
     </main>
     
-    <nav class="bottom-nav" style="display: none;">
+    <nav class="bottom-nav">
         <button class="nav-btn" data-section="create-note">
             <i class="fas fa-feather-alt"></i>
         </button>
@@ -86,8 +67,9 @@
     </nav>
     
     <footer>
-        <p>&copy; 2025 Aksara - Dibuat dengan bantuan Grok</p>
+        <p>&copy; 2025 Aksara </p>
     </footer>
     
+    <script src="script.js"></script>
 </body>
 </html>
