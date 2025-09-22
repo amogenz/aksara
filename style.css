@@ -1,7 +1,7 @@
 /* Tema temaram ala iOS Notes: Dark mode, minimalis dengan aksen kuning */
 body {
-    background-color: #15202B; /* Abu gelap Twitter */
-    color: #D2D2D7; /* Abu terang iOS */
+    background-color: #15202B; /* Abu gelap */
+    color: #D2D2D7;
     font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0;
     padding: 20px;
@@ -10,7 +10,7 @@ body {
     font-size: 17px;
 }
 
-/* ---------- existing styles (unchanged) ---------- */
+/* ---------- Header ---------- */
 header { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 20px; position: relative; }
 .header-actions { display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; }
 .home-link { text-decoration: none; color: inherit; }
@@ -19,6 +19,8 @@ header { display: flex; flex-direction: column; align-items: flex-start; margin-
 h1 { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 700; font-size: 24px; color: #F7C948; margin: 0; }
 #save-note { position: absolute; top: 10px; right: 20px; padding: 6px 12px; background-color: transparent; color: #F7C948; border: 1px solid #F7C948; border-radius: 20px; cursor: pointer; transition: all 0.2s ease; font-size: 15px; font-weight: 600; font-family: 'SF Pro Text', sans-serif; }
 #save-note:hover { background-color: #F7C948; color: #000000; transform: scale(1.05); }
+
+/* ---------- Main ---------- */
 main { max-width: 800px; margin: 0 auto; }
 .main-content { background-color: #1E2A3C; padding: 20px; border-radius: 12px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); margin-bottom: 20px; max-width: 600px; box-sizing: border-box; }
 .empty-state { text-align: center; padding: 40px 20px; color: #8E8E93; font-size: 16px; font-style: italic; font-family: 'SF Pro Text', sans-serif; }
@@ -29,6 +31,8 @@ main { max-width: 800px; margin: 0 auto; }
 #search-input::placeholder { color: #8E8E93; }
 #search-results { margin-top: 15px; }
 #notes-list { display: flex; flex-direction: column; gap: 0; }
+
+/* ---------- Note Card ---------- */
 .note-card { background-color: #1E2A3C; padding: 20px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); border-bottom: 1px solid #D2D2D7; transition: all 0.3s ease; cursor: pointer; min-height: 100px; overflow: visible; }
 .note-card h3 { margin: 0 0 8px 0; font-family: 'SF Pro Display', sans-serif; font-weight: 600; font-size: 20px; color: #F7C948; cursor: pointer; }
 .note-card .note-preview { margin: 0 0 15px 0; font-size: 16px; color: #D2D2D7; line-height: 1.4; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
@@ -43,6 +47,8 @@ main { max-width: 800px; margin: 0 auto; }
 .delete-btn:hover { background-color: #D70015; }
 .share-btn { background-color: #F7C948; color: #000000; }
 .share-btn:hover { background-color: #E1B740; }
+
+/* ---------- View Note ---------- */
 #view-only h2 { font-family: 'SF Pro Display', sans-serif; font-weight: 600; font-size: 24px; color: #F7C948; margin-bottom: 20px; }
 #view-note { background-color: #1E2A3C; padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); margin-bottom: 20px; }
 #view-note h3 { margin: 0 0 8px 0; font-family: 'SF Pro Display', sans-serif; font-weight: 600; font-size: 20px; color: #F7C948; }
@@ -53,167 +59,50 @@ main { max-width: 800px; margin: 0 auto; }
 .like-btn:hover { background-color: rgba(247, 201, 72, 0.1); }
 .copy-btn { background-color: #F7C948; color: #000000; }
 .copy-btn:hover { background-color: #E1B740; }
+
+/* ---------- Bottom Nav ---------- */
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: #1E2A3C; display: flex; justify-content: space-around; padding: 14px 0; box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.3); z-index: 1000; }
 .nav-btn { background-color: transparent; border: none; color: #D2D2D7; display: flex; align-items: center; justify-content: center; font-size: 28px; font-family: 'SF Pro Text', sans-serif; cursor: pointer; padding: 12px; transition: color 0.2s ease, transform 0.2s ease; border-bottom: 3px solid transparent; }
 .nav-btn.active { color: #F7C948; border-bottom: 3px solid #F7C948; }
 .nav-btn:hover { color: #F7C948; transform: scale(1.1); }
+
+/* ---------- Footer ---------- */
 footer { text-align: center; margin-top: 40px; font-size: 14px; color: #8E8E93; font-family: 'SF Pro Text', sans-serif; }
 .notes-count { display: inline-block; margin-left: 10px; padding: 2px 8px; background: rgba(247,201,72,0.12); color: #F7C948; border-radius: 999px; font-size: 13px; vertical-align: middle; font-weight: 600; }
 
-/* Center quote in global header - hidden by default, shown when editor open */
-.header-center-quote {
-    display: none;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #D2D2D7;
-    font-style: italic;
-    font-size: 14px;
-    text-align: center;
-    pointer-events: none;
-    max-width: 60%;
-}
-
-/* ---------- iOS-like editor styles (UPDATED to dark theme with yellow accent) ---------- */
+/* ---------- iOS-like Editor ---------- */
 .ios-note-editor {
     position: fixed;
-    inset: 0; /* will be visually offset by internal header to mimic page header */
-    background: #15202B; /* dark background for editor */
+    inset: 0;
+    background: #15202B;
     color: #D2D2D7;
     z-index: 1200;
     display: flex;
     flex-direction: column;
     -webkit-tap-highlight-color: transparent;
 }
-
-/* Editor internal header that matches global header (logo + title + centered quote) */
-.editor-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    box-sizing: border-box;
-    background: transparent;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-}
+.editor-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; box-sizing: border-box; background: transparent; border-bottom: 1px solid rgba(255,255,255,0.03); }
 .editor-header .logo-container h1 { color: #F7C948; }
-.editor-header .logo { width: 28px; height: 28px; }
-.editor-header-center-quote {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #D2D2D7;
-    font-style: italic;
-    font-size: 14px;
-    text-align: center;
-    pointer-events: none;
-    max-width: 60%;
-}
+.editor-topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; backdrop-filter: blur(6px); background: rgba(21,32,43,0.6); border-bottom: 1px solid rgba(255,255,255,0.03); min-height: 52px; box-sizing: border-box; }
+.editor-topbar .editor-cancel, .editor-topbar .editor-done { background: transparent; border: none; color: #F7C948; font-weight: 600; font-size: 17px; padding: 6px 8px; cursor: pointer; }
+.editor-topbar .editor-done { font-weight: 700; }
+.editor-title-center { font-size: 17px; font-weight: 600; color: #D2D2D7; text-align: center; flex: 1; }
 
-/* Topbar: translucent blur similar to iOS but dark */
-.editor-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    backdrop-filter: blur(6px);
-    background: rgba(21,32,43,0.6);
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-    min-height: 52px;
-    box-sizing: border-box;
-}
+/* Editor Content */
+.editor-content { padding: 18px 16px; overflow: auto; flex: 1; box-sizing: border-box; }
+.editor-title { width: 100%; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 28px; font-weight: 700; color: #F7C948; border: none; outline: none; padding: 6px 0; margin: 0 0 6px 0; background: transparent; }
+.editor-title::placeholder { color: rgba(210,210,215,0.55); font-weight: 600; }
+.editor-body { width: 100%; min-height: 240px; height: calc(100% - 60px); font-size: 17px; line-height: 1.5; color: #D2D2D7; border: none; outline: none; resize: none; background: transparent; padding: 6px 0; font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; white-space: pre-wrap; }
 
-.editor-topbar .editor-cancel,
-.editor-topbar .editor-done {
-    background: transparent;
-    border: none;
-    color: #F7C948; /* yellow accent */
-    font-weight: 600;
-    font-size: 17px;
-    padding: 6px 8px;
-    cursor: pointer;
-}
+/* ---------- Font Picker ---------- */
+.font-selector { position: relative; }
+#font-btn { background: transparent; border: 1px solid #F7C948; color: #F7C948; font-weight: bold; font-size: 18px; border-radius: 6px; padding: 4px 10px; cursor: pointer; }
+#font-dropdown { position: absolute; top: 40px; right: 0; background: #1E2A3C; color: #D2D2D7; border: 1px solid #F7C948; border-radius: 6px; padding: 6px; font-size: 15px; z-index: 2000; }
 
-.editor-topbar .editor-done {
-    font-weight: 700;
-}
-
-.editor-topbar .editor-title-center {
-    font-size: 17px;
-    font-weight: 600;
-    color: #D2D2D7;
-    text-align: center;
-    flex: 1;
-}
-
-/* Content area */
-.editor-content {
-    padding: 18px 16px;
-    overflow: auto;
-    flex: 1;
-    box-sizing: border-box;
-}
-
-/* Title input like iOS Notes (big, bold) */
-.editor-title {
-    width: 100%;
-    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    color: #F7C948; /* accent color for title in dark editor */
-    border: none;
-    outline: none;
-    padding: 6px 0;
-    margin: 0 0 6px 0;
-    background: transparent;
-}
-
-/* subtle divider under title */
-.editor-title::placeholder {
-    color: rgba(210,210,215,0.55);
-    font-weight: 600;
-}
-
-/* Body textarea */
-.editor-body {
-    width: 100%;
-    min-height: 240px;
-    height: calc(100% - 60px);
-    font-size: 17px;
-    line-height: 1.5;
-    color: #D2D2D7;
-    border: none;
-    outline: none;
-    resize: none;
-    background: transparent;
-    padding: 6px 0;
-    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    white-space: pre-wrap;
-}
-
-/* Small hint at bottom when editor open (optional) */
-.ios-note-editor .editor-hint {
-    font-size: 13px;
-    color: rgba(210,210,215,0.6);
-    padding: 10px 16px;
-}
-
-/* Hide the rest of app while editor is open (optional) */
-body.editor-open {
-    overflow: hidden;
-}
-
-/* Show center quote in global header when editor open */
-body.editor-open .header-center-quote {
-    display: block;
-}
-
-/* Responsif: mobile adjustments */
+/* Responsif */
 @media (max-width: 600px) {
     .ios-note-editor { padding-top: env(safe-area-inset-top); }
     .editor-title { font-size: 26px; }
     .editor-body { font-size: 17px; }
     .editor-topbar { padding: 12px 14px; min-height: 56px; }
 }
-
-/* If user wants dark-theme editor later, we can toggle with body.editor-dark */
