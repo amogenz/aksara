@@ -10,460 +10,167 @@ body {
     font-size: 17px;
 }
 
-header {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Align kiri */
-    margin-bottom: 20px; /* Kurangin margin tanpa tagline */
-}
+/* ---------- existing styles (unchanged) ---------- */
+header { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 20px; }
+.header-actions { display: flex; justify-content: space-between; align-items: center; width: 100%; position: relative; }
+.home-link { text-decoration: none; color: inherit; }
+.logo-container { display: flex; align-items: center; gap: 8px; }
+.logo { width: 32px; height: 32px; object-fit: contain; }
+h1 { font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-weight: 700; font-size: 24px; color: #F7C948; margin: 0; }
+#save-note { position: absolute; top: 10px; right: 20px; padding: 6px 12px; background-color: transparent; color: #F7C948; border: 1px solid #F7C948; border-radius: 20px; cursor: pointer; transition: all 0.2s ease; font-size: 15px; font-weight: 600; font-family: 'SF Pro Text', sans-serif; }
+#save-note:hover { background-color: #F7C948; color: #000000; transform: scale(1.05); }
+main { max-width: 800px; margin: 0 auto; }
+.main-content { background-color: #1E2A3C; padding: 20px; border-radius: 12px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); margin-bottom: 20px; max-width: 600px; box-sizing: border-box; }
+.empty-state { text-align: center; padding: 40px 20px; color: #8E8E93; font-size: 16px; font-style: italic; font-family: 'SF Pro Text', sans-serif; }
+.empty-state p { margin: 0 0 20px 0; }
+.cta-btn { padding: 8px 16px; background-color: #F7C948; color: #000000; border: none; border-radius: 20px; cursor: pointer; transition: all 0.2s ease; font-size: 14px; font-weight: 600; font-family: 'SF Pro Text', sans-serif; }
+.cta-btn:hover { background-color: #E1B740; transform: scale(1.05); }
+#search-input { width: calc(100% - 32px); padding: 12px 16px; margin: 0 16px 16px 16px; border: 1px solid #D2D2D7; border-radius: 10px; background-color: #1E2A3C; color: #D2D2D7; font-size: 17px; font-family: 'SF Pro Text', sans-serif; box-sizing: border-box; }
+#search-input::placeholder { color: #8E8E93; }
+#search-results { margin-top: 15px; }
+#notes-list { display: flex; flex-direction: column; gap: 0; }
+.note-card { background-color: #1E2A3C; padding: 20px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); border-bottom: 1px solid #D2D2D7; transition: all 0.3s ease; cursor: pointer; min-height: 100px; overflow: visible; }
+.note-card h3 { margin: 0 0 8px 0; font-family: 'SF Pro Display', sans-serif; font-weight: 600; font-size: 20px; color: #F7C948; cursor: pointer; }
+.note-card .note-preview { margin: 0 0 15px 0; font-size: 16px; color: #D2D2D7; line-height: 1.4; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
+.note-card .full-content { margin: 0 0 15px 0; font-size: 16px; color: #D2D2D7; line-height: 1.4; white-space: pre-wrap; display: none; }
+.note-card.expanded .note-preview { display: none; }
+.note-card.expanded .full-content { display: block; max-height: none; overflow: visible; }
+.note-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.edit-btn, .delete-btn, .share-btn, .like-btn, .copy-btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease; font-size: 15px; font-weight: 500; font-family: 'SF Pro Text', sans-serif; }
+.edit-btn { background-color: #F7C948; color: #000000; }
+.edit-btn:hover { background-color: #E1B740; }
+.delete-btn { background-color: #FF3B30; color: #FFFFFF; }
+.delete-btn:hover { background-color: #D70015; }
+.share-btn { background-color: #F7C948; color: #000000; }
+.share-btn:hover { background-color: #E1B740; }
+#view-only h2 { font-family: 'SF Pro Display', sans-serif; font-weight: 600; font-size: 24px; color: #F7C948; margin-bottom: 20px; }
+#view-note { background-color: #1E2A3C; padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); margin-bottom: 20px; }
+#view-note h3 { margin: 0 0 8px 0; font-family: 'SF Pro Display', sans-serif; font-weight: 600; font-size: 20px; color: #F7C948; }
+#view-note p { margin: 0 0 15px 0; font-size: 16px; color: #D2D2D7; line-height: 1.4; }
+#view-note .note-actions { display: flex; justify-content: flex-start; gap: 15px; align-items: center; }
+.like-btn { background-color: transparent; color: #F7C948; display: flex; align-items: center; gap: 5px; padding: 5px 10px; }
+.like-btn.liked { color: #F91880; }
+.like-btn:hover { background-color: rgba(247, 201, 72, 0.1); }
+.copy-btn { background-color: #F7C948; color: #000000; }
+.copy-btn:hover { background-color: #E1B740; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background-color: #1E2A3C; display: flex; justify-content: space-around; padding: 14px 0; box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.3); z-index: 1000; }
+.nav-btn { background-color: transparent; border: none; color: #D2D2D7; display: flex; align-items: center; justify-content: center; font-size: 28px; font-family: 'SF Pro Text', sans-serif; cursor: pointer; padding: 12px; transition: color 0.2s ease, transform 0.2s ease; border-bottom: 3px solid transparent; }
+.nav-btn.active { color: #F7C948; border-bottom: 3px solid #F7C948; }
+.nav-btn:hover { color: #F7C948; transform: scale(1.1); }
+footer { text-align: center; margin-top: 40px; font-size: 14px; color: #8E8E93; font-family: 'SF Pro Text', sans-serif; }
+.notes-count { display: inline-block; margin-left: 10px; padding: 2px 8px; background: rgba(247,201,72,0.12); color: #F7C948; border-radius: 999px; font-size: 13px; vertical-align: middle; font-weight: 600; }
 
-.header-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center; /* Rata vertikal */
-    width: 100%;
-    position: relative;
-}
-
-.home-link {
-    text-decoration: none; /* No underline */
-    color: inherit; /* Warna sama dengan h1 */
-}
-
-.logo-container {
-    display: flex;
-    align-items: center;
-    gap: 8px; /* Jarak logo dan teks */
-}
-
-.logo {
-    width: 32px; /* Ukuran kecil, nyaman di mata */
-    height: 32px;
-    object-fit: contain;
-}
-
-h1 {
-    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-weight: 700;
-    font-size: 24px; /* Kecilkan biar nyaman */
-    color: #F7C948; /* Aksen kuning iOS Notes */
-    margin: 0;
-}
-
-#save-note {
-    position: absolute;
-    top: 10px; /* Rapiin jarak */
-    right: 20px;
-    padding: 6px 12px; /* Kecil ala iOS */
-    background-color: transparent;
-    color: #F7C948; /* Kuning iOS */
-    border: 1px solid #F7C948;
-    border-radius: 20px; /* Bulat halus */
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 15px;
-    font-weight: 600;
-    font-family: 'SF Pro Text', sans-serif;
-}
-
-#save-note:hover {
-    background-color: #F7C948;
-    color: #000000; /* Hitam biar kontras */
-    transform: scale(1.05);
-}
-
-main {
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.main-content {
-    background-color: #1E2A3C; /* Gelap kontras untuk card */
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    margin-bottom: 20px;
-    max-width: 600px;
-    box-sizing: border-box;
-}
-
-#create-note {
-    max-width: 600px; /* Lebar form sama dengan card lain */
-    margin: 0 auto;
-    padding: 20px 0; /* Minimal padding, no box */
-}
-
-#create-note .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Jarak antar elemen lebih lega */
-}
-
-#note-title {
-    padding: 8px 0;
-    border: none;
-    border-bottom: 1px solid #D2D2D7; /* Border bawah iOS */
-    background: transparent; /* No box */
-    color: #D2D2D7;
-    font-size: 17px;
-    font-family: 'SF Pro Text', sans-serif;
-    transition: border-color 0.2s ease;
-}
-
-#note-title:focus {
-    outline: none;
-    border-color: #F7C948; /* Glow kuning iOS */
-}
-
-#note-title::placeholder {
-    color: #8E8E93;
-    font-style: normal; /* iOS Notes ga italic */
-}
-
-#note-title:hover {
-    border-color: #AEAEB2; /* Feedback hover */
-}
-
-#note-content {
-    padding: 8px 0;
-    border: none;
-    border-bottom: 1px solid #D2D2D7;
-    background: transparent;
-    color: #D2D2D7;
-    font-size: 17px;
-    height: 150px; /* Sedikit lebih tinggi ala iOS */
-    resize: vertical;
-    font-family: 'SF Pro Text', sans-serif;
-    line-height: 1.4;
-    transition: border-color 0.2s ease;
-}
-
-#note-content:focus {
-    outline: none;
-    border-color: #F7C948;
-}
-
-#note-content::placeholder {
-    color: #8E8E93;
-    font-style: normal;
-}
-
-#note-content:hover {
-    border-color: #AEAEB2;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: #8E8E93;
-    font-size: 16px;
-    font-style: italic;
-    font-family: 'SF Pro Text', sans-serif;
-}
-
-.empty-state p {
-    margin: 0 0 20px 0;
-}
-
-.cta-btn {
-    padding: 8px 16px;
-    background-color: #F7C948;
-    color: #000000;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: 'SF Pro Text', sans-serif;
-}
-
-.cta-btn:hover {
-    background-color: #E1B740;
-    transform: scale(1.05);
-}
-
-#search-input {
-    width: calc(100% - 32px);
-    padding: 12px 16px;
-    margin: 0 16px 16px 16px;
-    border: 1px solid #D2D2D7;
-    border-radius: 10px;
-    background-color: #1E2A3C;
-    color: #D2D2D7;
-    font-size: 17px;
-    font-family: 'SF Pro Text', sans-serif;
-    box-sizing: border-box;
-}
-
-#search-input::placeholder {
-    color: #8E8E93;
-}
-
-#search-results {
-    margin-top: 15px;
-}
-
-#notes-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-}
-
-.note-card {
-    background-color: #1E2A3C;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-    border-bottom: 1px solid #D2D2D7;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    min-height: 100px;
-    overflow: visible;
-}
-
-.note-card h3 {
-    margin: 0 0 8px 0;
-    font-family: 'SF Pro Display', sans-serif;
-    font-weight: 600;
-    font-size: 20px;
-    color: #F7C948; /* Kuning iOS */
-    cursor: pointer;
-}
-
-.note-card .note-preview {
-    margin: 0 0 15px 0;
-    font-size: 16px;
-    color: #D2D2D7;
-    line-height: 1.4;
-    white-space: pre-wrap;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.note-card .full-content {
-    margin: 0 0 15px 0;
-    font-size: 16px;
-    color: #D2D2D7;
-    line-height: 1.4;
-    white-space: pre-wrap;
-    display: none;
-}
-
-.note-card.expanded .note-preview {
-    display: none;
-}
-
-.note-card.expanded .full-content {
-    display: block;
-    max-height: none;
-    overflow: visible;
-}
-
-.note-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.edit-btn, .delete-btn, .share-btn, .like-btn, .copy-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-size: 15px;
-    font-weight: 500;
-    font-family: 'SF Pro Text', sans-serif;
-}
-
-.edit-btn {
-    background-color: #F7C948;
-    color: #000000;
-}
-
-.edit-btn:hover {
-    background-color: #E1B740;
-}
-
-.delete-btn {
-    background-color: #FF3B30;
-    color: #FFFFFF;
-}
-
-.delete-btn:hover {
-    background-color: #D70015;
-}
-
-.share-btn {
-    background-color: #F7C948;
-    color: #000000;
-}
-
-.share-btn:hover {
-    background-color: #E1B740;
-}
-
-#view-only h2 {
-    font-family: 'SF Pro Display', sans-serif;
-    font-weight: 600;
-    font-size: 24px;
-    color: #F7C948;
-    margin-bottom: 20px;
-}
-
-#view-note {
-    background-color: #1E2A3C;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    margin-bottom: 20px;
-}
-
-#view-note h3 {
-    margin: 0 0 8px 0;
-    font-family: 'SF Pro Display', sans-serif;
-    font-weight: 600;
-    font-size: 20px;
-    color: #F7C948;
-}
-
-#view-note p {
-    margin: 0 0 15px 0;
-    font-size: 16px;
-    color: #D2D2D7;
-    line-height: 1.4;
-}
-
-#view-note .note-actions {
-    display: flex;
-    justify-content: flex-start;
-    gap: 15px;
-    align-items: center;
-}
-
-.like-btn {
-    background-color: transparent;
-    color: #F7C948;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 5px 10px;
-}
-
-.like-btn.liked {
-    color: #F91880;
-}
-
-.like-btn:hover {
-    background-color: rgba(247, 201, 72, 0.1);
-}
-
-.copy-btn {
-    background-color: #F7C948;
-    color: #000000;
-}
-
-.copy-btn:hover {
-    background-color: #E1B740;
-}
-
-.bottom-nav {
+/* ---------- iOS-like editor styles ---------- */
+.ios-note-editor {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #1E2A3C;
+    inset: 0; /* top:0; left:0; right:0; bottom:0; */
+    background: #ffffff;
+    color: #000000;
+    z-index: 1200;
     display: flex;
-    justify-content: space-around;
-    padding: 14px 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.3);
-    z-index: 1000;
+    flex-direction: column;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.nav-btn {
-    background-color: transparent;
-    border: none;
-    color: #D2D2D7;
+/* Topbar: translucent blur similar to iOS */
+.editor-topbar {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-family: 'SF Pro Text', sans-serif;
+    justify-content: space-between;
+    padding: 10px 14px;
+    backdrop-filter: blur(8px);
+    background: rgba(255,255,255,0.88);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    min-height: 52px;
+    box-sizing: border-box;
+}
+
+.editor-topbar .editor-cancel,
+.editor-topbar .editor-done {
+    background: transparent;
+    border: none;
+    color: #007AFF; /* iOS blue */
+    font-weight: 600;
+    font-size: 17px;
+    padding: 6px 8px;
     cursor: pointer;
-    padding: 12px;
-    transition: color 0.2s ease, transform 0.2s ease;
-    border-bottom: 3px solid transparent;
 }
 
-.nav-btn.active {
-    color: #F7C948;
-    border-bottom: 3px solid #F7C948;
+.editor-topbar .editor-done {
+    font-weight: 700;
 }
 
-.nav-btn:hover {
-    color: #F7C948;
-    transform: scale(1.1);
-}
-
-footer {
+.editor-topbar .editor-title-center {
+    font-size: 17px;
+    font-weight: 600;
+    color: #000;
     text-align: center;
-    margin-top: 40px;
-    font-size: 14px;
-    color: #8E8E93;
-    font-family: 'SF Pro Text', sans-serif;
+    flex: 1;
 }
 
-/* Responsif: Mirip iOS Notes mobile */
-@media (max-width: 600px) {
-    body {
-        padding: 10px;
-        padding-bottom: 90px;
-    }
-    
-    .main-content {
-        padding: 15px;
-        max-width: 100%;
-    }
-    
-    #create-note {
-        padding: 10px 0;
-    }
-    
-    .note-card {
-        padding: 15px;
-        margin-bottom: 5px;
-    }
-    
-    #view-note {
-        padding: 15px;
-    }
-    
-    .logo {
-        width: 28px;
-        height: 28px;
-    }
-    
-    h1 {
-        font-size: 20px;
-    }
-    
-    #note-title, #note-content {
-        font-size: 16px;
-        padding: 6px 0;
-    }
-    
-    #save-note, .cta-btn {
-        padding: 5px 10px;
-        font-size: 14px;
-    }
-    
-    .empty-state {
-        padding: 20px 10px;
-        font-size: 14px;
-    }
+/* Content area */
+.editor-content {
+    padding: 18px 16px;
+    overflow: auto;
+    flex: 1;
+    box-sizing: border-box;
 }
+
+/* Title input like iOS Notes (big, bold) */
+.editor-title {
+    width: 100%;
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #000;
+    border: none;
+    outline: none;
+    padding: 6px 0;
+    margin: 0 0 6px 0;
+    background: transparent;
+}
+
+/* subtle divider under title */
+.editor-title::placeholder {
+    color: #8E8E93;
+    font-weight: 600;
+}
+
+/* Body textarea */
+.editor-body {
+    width: 100%;
+    min-height: 240px;
+    height: calc(100% - 60px);
+    font-size: 17px;
+    line-height: 1.5;
+    color: #000;
+    border: none;
+    outline: none;
+    resize: none;
+    background: transparent;
+    padding: 6px 0;
+    font-family: 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    white-space: pre-wrap;
+}
+
+/* Small hint at bottom when editor open (optional) */
+.ios-note-editor .editor-hint {
+    font-size: 13px;
+    color: rgba(0,0,0,0.45);
+    padding: 10px 16px;
+}
+
+/* Hide the rest of app while editor is open (optional) */
+body.editor-open {
+    overflow: hidden;
+}
+
+/* Responsif: mobile adjustments */
+@media (max-width: 600px) {
+    .ios-note-editor { padding-top: env(safe-area-inset-top); }
+    .editor-title { font-size: 26px; }
+    .editor-body { font-size: 17px; }
+    .editor-topbar { padding: 12px 14px; min-height: 56px; }
+}
+
+/* If user wants dark-theme editor later, we can toggle with body.editor-dark */
