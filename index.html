@@ -25,10 +25,19 @@
     </header>
     
     <main>
+        <!-- CREATE NOTE: iOS-like full screen editor -->
         <div id="create-note" style="display: none;">
-            <div class="form-group">
-                <input type="text" id="note-title" placeholder="Judul catatan (opsional)">
-                <textarea id="note-content" placeholder="Tulis catatanmu..."></textarea>
+            <div class="ios-note-editor" role="dialog" aria-label="Editor Catatan">
+                <div class="editor-topbar">
+                    <button class="editor-cancel" aria-label="Batal">Batal</button>
+                    <div class="editor-title-center">Catatan Baru</div>
+                    <button class="editor-done" aria-label="Selesai">Selesai</button>
+                </div>
+
+                <div class="editor-content">
+                    <input type="text" id="note-title" class="editor-title" placeholder="Judul" />
+                    <textarea id="note-content" class="editor-body" placeholder="Tulis catatanmu..." ></textarea>
+                </div>
             </div>
         </div>
         
@@ -39,7 +48,7 @@
         </section>
         
         <section id="your-notes" class="main-content">
-            <h2>Catatan Anda</h2>
+            <h2>Catatan Anda <span id="notes-count" class="notes-count">0</span></h2>
             <div id="notes-list">
                 <div class="empty-state">
                     <p>Anda belum menulis apapun</p>
