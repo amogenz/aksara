@@ -3,82 +3,55 @@ let myName = "";
 let myRoom = "";
 let storageTopic = ""; 
 
-// --- COUNTER & STATS ---
-let statsTopic = "aksara-global-v1/visits"; 
-let hasCountedVisit = false; 
+const notifAudio = document.getElementById('notifSound');
+const sentAudio = document.getElementById('sentSound');
 
 let mediaRecorder, audioChunks = [], isRecording = false, audioBlobData = null;
 let isSoundOn = true;
 let sendOnEnter = true;
-let replyingTo = null; // Format: { id, user, text }
+let replyingTo = null; 
 let onlineUsers = {};
 let typingTimeout;
 let localChatHistory = []; 
 
-const notifAudio = document.getElementById('notifSound');
+// --- TOAST FUNCTION (NO ALERT) ---
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    let icon = 'info';
+    if (type === 'success') icon = 'check_circle';
+    if (type === 'error') icon = 'error';
+    toast.innerHTML = `<i class="material-icons" style="color:${type==='error'?'#ff4444':(type==='success'?'#34C759':'#007AFF')}">${icon}</i> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
+}
 
 // --- INIT ---
 window.onload = function() {
     if(localStorage.getItem('aksara_name')) document.getElementById('username').value = localStorage.getItem('aksara_name');
     if(localStorage.getItem('aksara_room')) document.getElementById('room').value = localStorage.getItem('aksara_room');
-    
     if(localStorage.getItem('aksara_sound')) document.getElementById('sound-toggle').checked = (localStorage.getItem('aksara_sound') === 'true');
     if(localStorage.getItem('aksara_enter')) document.getElementById('enter-toggle').checked = (localStorage.getItem('aksara_enter') === 'true');
     const savedBg = localStorage.getItem('aksara_bg_image');
     if(savedBg) document.body.style.backgroundImage = `url(${savedBg})`;
-
-    // LOAD THEME
-    const savedTheme = localStorage.getItem('aksara_theme') || 'default';
-    setTheme(savedTheme);
 };
 
-// --- TEMA & UI SYSTEM ---
-function setTheme(themeName) {
-    document.documentElement.setAttribute('data-theme', themeName);
-    localStorage.setItem('aksara_theme', themeName);
-    
-    const ind = document.getElementById('typing-indicator');
-    if(ind && ind.innerText.includes('mengetik')) {
-        ind.classList.add('typing');
-    }
-    
-    const btns = document.querySelectorAll('.theme-btn');
-    btns.forEach(btn => {
-        if(btn.getAttribute('onclick').includes(themeName)) btn.classList.add('active');
-        else btn.classList.remove('active');
-    });
-}
-
-// --- NOTIFIKASI SYSTEM ---
-function enableNotif() {
-    Notification.requestPermission().then(p => {
-        if (p === "granted") alert("Notifikasi Aktif!"); else alert("Ditolak browser.");
-    });
-}
-function sendSystemNotification(user, text) {
-    if (document.visibilityState === "hidden" && Notification.permission === "granted") {
-        const notif = new Notification(`Aksara: ${user}`, { body: text, icon: "https://i.imgur.com/Ct0pzwl.png" });
-        notif.onclick = function() { window.focus(); this.close(); };
-    }
-}
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const overlay = document.getElementById('sidebar-overlay');
-    if (sidebar.style.left === '0px') { sidebar.style.left = '-280px'; overlay.style.display = 'none'; }
-    else { sidebar.style.left = '0px'; overlay.style.display = 'block'; }
+    if (sidebar.style.left === '0px') { sidebar.style.left = '-350px'; sidebar.classList.remove('active'); overlay.style.display = 'none'; }
+    else { sidebar.style.left = '0px'; sidebar.classList.add('active'); overlay.style.display = 'block'; }
 }
 
 // --- KONEKSI UTAMA ---
 function startChat() {
     const user = document.getElementById('username').value.trim();
     const room = document.getElementById('room').value.trim().toLowerCase();
-    if (!user || !room) { alert("Isi data dulu!"); return; }
+    if (!user || !room) { showToast("Lengkapi data dulu!", "error"); return; }
 
-    localStorage.setItem('aksara_name', user);
-    localStorage.setItem('aksara_room', room);
-    myName = user;
-    myRoom = "aksara-v29/" + room; 
-    storageTopic = myRoom + "/storage"; 
+    localStorage.setItem('aksara_name', user); localStorage.setItem('aksara_room', room);
+    myName = user; myRoom = "aksara-v29/" + room; storageTopic = myRoom + "/storage"; 
 
     document.getElementById('side-user').innerText = myName;
     document.getElementById('login-screen').style.display = 'none';
@@ -88,87 +61,28 @@ function startChat() {
 
     loadFromLocal(); 
 
-    const options = { 
-        protocol: 'wss', type: 'mqtt', clean: true, reconnectPeriod: 1000, 
-        clientId: 'aks_' + Math.random().toString(16).substr(2, 8) 
-    };
-    
+    const options = { protocol: 'wss', type: 'mqtt', clean: true, reconnectPeriod: 1000, clientId: 'aks_' + Math.random().toString(16).substr(2, 8) };
     client = mqtt.connect('wss://broker.emqx.io:8084/mqtt', options);
 
     client.on('connect', () => {
-        document.getElementById('typing-indicator').innerText = "from Amogenz";
-        
-        client.subscribe(myRoom);
-        client.subscribe(storageTopic);
-        client.subscribe(statsTopic);
-        
+        document.getElementById('typing-indicator').innerText = "";
+        client.subscribe(myRoom); client.subscribe(storageTopic);
         publishMessage("bergabung.", 'system');
-        
-        setTimeout(() => {
-            const counterEl = document.getElementById('visit-counter');
-            if (counterEl.innerText === "loading...") {
-                counterEl.innerText = "1";
-                hasCountedVisit = true;
-                client.publish(statsTopic, "1", { retain: true, qos: 1 });
-            }
-        }, 3000);
-
-        setInterval(() => {
-            client.publish(myRoom, JSON.stringify({ type: 'ping', user: myName }));
-            cleanOnlineList();
-        }, 10000);
+        setInterval(() => { client.publish(myRoom, JSON.stringify({ type: 'ping', user: myName })); cleanOnlineList(); }, 10000);
     });
 
     client.on('message', (topic, message) => {
         const msgString = message.toString();
-        
-        if (topic === statsTopic) {
-            let currentVisits = 0;
-            try { currentVisits = parseInt(msgString); } catch(e) {}
-            if (isNaN(currentVisits)) currentVisits = 0;
-
-            if (!hasCountedVisit) {
-                const newVisitCount = currentVisits + 1;
-                hasCountedVisit = true; 
-                client.publish(statsTopic, newVisitCount.toString(), { retain: true, qos: 1 });
-                document.getElementById('visit-counter').innerText = newVisitCount.toLocaleString();
-            } else {
-                document.getElementById('visit-counter').innerText = currentVisits.toLocaleString();
-            }
-            return; 
-        }
-
-        if (topic === storageTopic) {
-            try {
-                const serverHistory = JSON.parse(msgString);
-                if (Array.isArray(serverHistory)) mergeWithLocal(serverHistory);
-            } catch(e) {}
-            return;
-        }
-
-        if (topic === myRoom) {
-            try {
-                const data = JSON.parse(msgString);
-                if (data.type === 'ping') { updateOnlineList(data.user); return; }
-                if (data.type === 'typing') { showTyping(data.user); return; }
-                handleIncomingMessage(data);
-            } catch (e) {}
-        }
+        if (topic === storageTopic) { try { const srv = JSON.parse(msgString); if (Array.isArray(srv)) mergeWithLocal(srv); } catch(e) {} return; }
+        if (topic === myRoom) { try { const data = JSON.parse(msgString); if (data.type === 'ping') { updateOnlineList(data.user); return; } if (data.type === 'typing') { showTyping(data.user); return; } handleIncomingMessage(data); } catch(e) {} }
     });
 }
 
-// --- LOGIKA PENYIMPANAN ---
-function loadFromLocal() {
-    const saved = localStorage.getItem(getStorageKey());
-    if (saved) { localChatHistory = JSON.parse(saved); renderChat(); }
-}
-function saveToLocal() {
-    localStorage.setItem(getStorageKey(), JSON.stringify(localChatHistory));
-}
+function loadFromLocal() { const saved = localStorage.getItem(getStorageKey()); if (saved) { localChatHistory = JSON.parse(saved); renderChat(); } }
+function saveToLocal() { localStorage.setItem(getStorageKey(), JSON.stringify(localChatHistory)); }
 function handleIncomingMessage(data) {
     if(data.type !== 'system') {
-        const exists = localChatHistory.some(msg => msg.id === data.id);
-        if (!exists) {
+        if (!localChatHistory.some(msg => msg.id === data.id)) {
             localChatHistory.push(data);
             if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77); 
             saveToLocal(); renderChat(); 
@@ -177,260 +91,98 @@ function handleIncomingMessage(data) {
     } else { displaySingleMessage(data); }
 }
 function mergeWithLocal(serverData) {
-    let isChanged = false;
-    serverData.forEach(srvMsg => {
-        const exists = localChatHistory.some(locMsg => locMsg.id === srvMsg.id);
-        if (!exists) { localChatHistory.push(srvMsg); isChanged = true; }
-    });
-    if (isChanged) {
-        localChatHistory.sort((a, b) => a.timestamp - b.timestamp);
-        if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77);
-        saveToLocal(); renderChat();
-    }
+    let changed = false;
+    serverData.forEach(srvMsg => { if (!localChatHistory.some(locMsg => locMsg.id === srvMsg.id)) { localChatHistory.push(srvMsg); changed = true; } });
+    if (changed) { localChatHistory.sort((a, b) => a.timestamp - b.timestamp); if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77); saveToLocal(); renderChat(); }
 }
-function updateServerStorage() {
-    client.publish(storageTopic, JSON.stringify(localChatHistory), { retain: true, qos: 1 });
-}
+function updateServerStorage() { client.publish(storageTopic, JSON.stringify(localChatHistory), { retain: true, qos: 1 }); }
 function renderChat() {
     const chatBox = document.getElementById('messages');
-    chatBox.innerHTML = '<div class="welcome-msg">Riwayat chat dimuat (Maks 77).</div>';
+    chatBox.innerHTML = '<div class="welcome-msg">Messages are encrypted and secure.</div>';
     localChatHistory.forEach(msg => displaySingleMessage(msg));
     setTimeout(() => { chatBox.scrollTop = chatBox.scrollHeight; }, 50);
 }
 
-// --- HELPER ---
 function getStorageKey() { return 'aksara_history_v29_' + myRoom; }
-function handleBackgroundUpload(input) { 
-    const file = input.files[0];
-    if(file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try { localStorage.setItem('aksara_bg_image', e.target.result); document.body.style.backgroundImage = `url(${e.target.result})`; alert("Background diganti!"); } catch(e){alert("Gambar kebesaran!");}
-        }
-        reader.readAsDataURL(file);
-    }
+function handleBackgroundUpload(input) {
+    const f = input.files[0];
+    if(f) { const r = new FileReader(); r.onload = e => { try { localStorage.setItem('aksara_bg_image', e.target.result); document.body.style.backgroundImage = `url(${e.target.result})`; showToast("Background diganti!", "success"); } catch(e){ showToast("Gambar kebesaran!", "error"); } }; r.readAsDataURL(f); }
 }
-function resetBackground() { localStorage.removeItem('aksara_bg_image'); document.body.style.backgroundImage = ""; alert("Background dihapus."); }
+function resetBackground() { localStorage.removeItem('aksara_bg_image'); document.body.style.backgroundImage = ""; showToast("Background dihapus.", "info"); }
 function clearChatHistory() { localStorage.removeItem(getStorageKey()); }
 function toggleSound() { isSoundOn = document.getElementById('sound-toggle').checked; localStorage.setItem('aksara_sound', isSoundOn); }
 function toggleEnterSettings() { sendOnEnter = document.getElementById('enter-toggle').checked; localStorage.setItem('aksara_enter', sendOnEnter); }
 function updateOnlineList(user) { onlineUsers[user] = Date.now(); renderOnlineList(); }
-function cleanOnlineList() { const now = Date.now(); for (const user in onlineUsers) { if (now - onlineUsers[user] > 25000) delete onlineUsers[user]; } renderOnlineList(); }
-function renderOnlineList() {
-    const list = document.getElementById('online-list');
-    list.innerHTML = ""; let total = 0;
-    for (const user in onlineUsers) {
-        total++; const li = document.createElement('li');
-        li.style.color = "#aaa"; li.style.marginBottom = "5px"; li.style.fontSize = "0.9rem"; li.innerHTML = `<span style="color:#0f0">●</span> ${user}`;
-        list.appendChild(li);
-    }
-    document.getElementById('online-count').innerText = total;
-}
+function cleanOnlineList() { const now = Date.now(); for (const u in onlineUsers) { if (now - onlineUsers[u] > 25000) delete onlineUsers[u]; } renderOnlineList(); }
+function renderOnlineList() { const list = document.getElementById('online-list'); list.innerHTML = ""; for (const u in onlineUsers) { const li = document.createElement('li'); li.innerHTML = `<span style="color:var(--ios-green)">●</span> ${u}`; list.appendChild(li); } }
 
-// --- SEND MESSAGE ---
 function publishMessage(content, type = 'text', caption = '') {
     if (!content) return;
     const now = new Date();
     const time = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0');
-    
     const msgId = 'msg-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-
-    const payload = { 
-        id: msgId, 
-        user: myName, content: content, type: type, 
-        caption: caption, time: time, reply: replyingTo, timestamp: Date.now() 
-    };
-    
-    try { client.publish(myRoom, JSON.stringify(payload)); } catch(e) { alert("Koneksi error, coba lagi!"); }
+    const payload = { id: msgId, user: myName, content: content, type: type, caption: caption, time: time, reply: replyingTo, timestamp: Date.now() };
+    try { 
+        client.publish(myRoom, JSON.stringify(payload)); 
+        if (isSoundOn && type !== 'system') { sentAudio.volume = 0.4; sentAudio.currentTime = 0; sentAudio.play().catch(() => {}); }
+    } catch(e) { showToast("Gagal mengirim!", "error"); }
     cancelReply();
 }
-function sendMessage() {
-    const input = document.getElementById('msg-input'); const text = input.value.trim();
-    if (text) { publishMessage(text, 'text'); input.value = ''; input.style.height = 'auto'; input.focus(); }
-}
+function sendMessage() { const input = document.getElementById('msg-input'); const text = input.value.trim(); if (text) { publishMessage(text, 'text'); input.value = ''; input.style.height = 'auto'; input.focus(); } }
 function handleEnter(e) { if (e.key === 'Enter' && !e.shiftKey && sendOnEnter) { e.preventDefault(); sendMessage(); } }
 
-// --- UPDATE REPLY LOGIC ---
-function setReply(id, user, text) { 
-    replyingTo = { id: id, user: user, text: text }; 
-    document.getElementById('reply-preview-bar').style.display = 'flex'; 
-    document.getElementById('reply-to-user').innerText = user; 
-    
-    let preview = text;
-    if(preview.length > 50) preview = preview.substring(0, 50) + "...";
-    document.getElementById('reply-preview-text').innerText = preview; 
-    
-    document.getElementById('msg-input').focus(); 
-}
+function setReply(id, user, text) { replyingTo = { id: id, user: user, text: text }; document.getElementById('reply-preview-bar').style.display = 'flex'; document.getElementById('reply-to-user').innerText = user; document.getElementById('reply-preview-text').innerText = text.substring(0,50)+'...'; document.getElementById('msg-input').focus(); }
 function cancelReply() { replyingTo = null; document.getElementById('reply-preview-bar').style.display = 'none'; }
+function scrollToMessage(msgId) { const el = document.getElementById(msgId); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.classList.add('flash-highlight'); setTimeout(() => el.classList.remove('flash-highlight'), 1000); } else { showToast("Pesan tidak ditemukan.", "info"); } }
 
-function scrollToMessage(msgId) {
-    const el = document.getElementById(msgId);
-    if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        el.classList.add('flash-highlight');
-        setTimeout(() => el.classList.remove('flash-highlight'), 1000);
-    } else {
-        alert("Pesan asli sudah tidak ada (terhapus/terlalu lama).");
-    }
-}
-
-// --- MEDIA LOGIC (RECORDING & IMAGE) ---
 async function toggleRecording() {
-    const micBtn = document.getElementById('mic-btn');
     if (!isRecording) {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream); audioChunks = [];
             mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                audioBlobData = new Blob(audioChunks, { type: 'audio/webm' });
-                document.getElementById('vn-player').src = URL.createObjectURL(audioBlobData);
-                document.getElementById('vn-preview-bar').style.display = 'flex';
-                document.getElementById('main-input-area').style.display = 'none';
-            };
-            mediaRecorder.start(); isRecording = true; micBtn.classList.add('recording');
-        } catch (err) { alert("Butuh izin mic!"); }
-    } else { mediaRecorder.stop(); isRecording = false; micBtn.classList.remove('recording'); }
+            mediaRecorder.onstop = () => { audioBlobData = new Blob(audioChunks, { type: 'audio/webm' }); document.getElementById('vn-player').src = URL.createObjectURL(audioBlobData); document.getElementById('vn-preview-bar').style.display = 'flex'; document.getElementById('main-input-area').style.display = 'none'; };
+            mediaRecorder.start(); isRecording = true; document.getElementById('mic-btn').classList.add('recording');
+        } catch (err) { showToast("Butuh izin mic!", "error"); }
+    } else { mediaRecorder.stop(); isRecording = false; document.getElementById('mic-btn').classList.remove('recording'); }
 }
-function sendVoiceNote() { const reader = new FileReader(); reader.readAsDataURL(audioBlobData); reader.onloadend = () => { publishMessage(reader.result, 'audio'); cancelVoiceNote(); }; }
+function sendVoiceNote() { const r = new FileReader(); r.readAsDataURL(audioBlobData); r.onloadend = () => { publishMessage(r.result, 'audio'); cancelVoiceNote(); }; }
 function cancelVoiceNote() { audioBlobData = null; document.getElementById('vn-preview-bar').style.display = 'none'; document.getElementById('main-input-area').style.display = 'flex'; }
-function handleImageUpload(input) {
-    const file = input.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            tempImageBase64 = e.target.result;
-            document.getElementById('preview-img').src = tempImageBase64;
-            document.getElementById('image-preview-modal').style.display = 'flex';
-        }
-        reader.readAsDataURL(file);
-    }
-    input.value = ""; 
-}
+
+function handleImageUpload(input) { const f = input.files[0]; if (f) { const r = new FileReader(); r.onload = e => { document.getElementById('preview-img').src = e.target.result; document.getElementById('image-preview-modal').style.display = 'flex'; }; r.readAsDataURL(f); } input.value = ""; }
 function triggerImageUpload() { document.getElementById('chat-file-input').click(); }
-function cancelImagePreview() {
-    document.getElementById('image-preview-modal').style.display = 'none';
-    document.getElementById('img-caption').value = "";
-    tempImageBase64 = null;
-}
+function cancelImagePreview() { document.getElementById('image-preview-modal').style.display = 'none'; document.getElementById('img-caption').value=""; }
 function sendImageWithCaption() {
-    if (!tempImageBase64) return;
-    const caption = document.getElementById('img-caption').value.trim();
-    const img = new Image(); img.src = tempImageBase64;
-    img.onload = function() {
-        const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
-        const scale = 300 / img.width; canvas.width = 300; canvas.height = img.height * scale;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-        publishMessage(compressedBase64, 'image', caption);
-        cancelImagePreview();
-    }
+    const caption = document.getElementById('img-caption').value.trim(); const img = new Image(); img.src = document.getElementById('preview-img').src;
+    img.onload = function() { const c = document.createElement('canvas'); const ctx = c.getContext('2d'); const s = 300/img.width; c.width = 300; c.height = img.height * s; ctx.drawImage(img, 0, 0, c.width, c.height); publishMessage(c.toDataURL('image/jpeg', 0.6), 'image', caption); cancelImagePreview(); }
 }
-function handleTyping() { 
-    if(client && client.connected) client.publish(myRoom, JSON.stringify({ type: 'typing', user: myName })); 
-    const el = document.getElementById('msg-input'); 
-    el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; 
-}
-function showTyping(user) {
-    if (user === myName) return;
-    const ind = document.getElementById('typing-indicator');
-    ind.innerText = `${user} mengetik...`; 
-    ind.classList.add('typing'); // Tambah class warna
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => { 
-        ind.innerText = "from Amogenz"; 
-        ind.classList.remove('typing'); // Hapus class warna
-    }, 2000);
-}
+function handleTyping() { if(client && client.connected) client.publish(myRoom, JSON.stringify({ type: 'typing', user: myName })); const el = document.getElementById('msg-input'); el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+function showTyping(user) { if (user === myName) return; const ind = document.getElementById('typing-indicator'); ind.innerText = `${user} typing...`; clearTimeout(typingTimeout); typingTimeout = setTimeout(() => { ind.innerText = ""; }, 2000); }
 
-// --- DISPLAY LOGIC ---
+// --- LIGHTBOX FUNCTIONS ---
+function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-overlay').style.display = 'flex'; }
+function closeLightbox(e) { if (e.target.classList.contains('lightbox-close') || e.target.id === 'lightbox-overlay') { document.getElementById('lightbox-overlay').style.display = 'none'; } }
+
 function displaySingleMessage(data) {
-    const chatBox = document.getElementById('messages');
-    const div = document.createElement('div');
-    const isMe = data.user === myName;
-    
+    const chatBox = document.getElementById('messages'); const div = document.createElement('div'); const isMe = data.user === myName;
     if (data.id) div.id = data.id;
+    if ((Date.now() - data.timestamp) < 3000 && !isMe && data.type !== 'system') { if (isSoundOn) { notifAudio.currentTime=0; notifAudio.play().catch(()=>{}); } }
 
-    const isNew = (Date.now() - data.timestamp) < 3000; 
-    if (isNew && !isMe && data.type !== 'system') {
-        if (isSoundOn) { notifAudio.currentTime = 0; notifAudio.play().catch(() => {}); }
-        sendSystemNotification(data.user, data.type === 'text' ? data.content : 'Mengirim media');
-    }
-
-    if (data.type === 'system') {
-        div.style.textAlign = 'center'; div.style.fontSize = '0.7rem'; 
-        div.style.color = '#666'; div.style.margin = "10px 0";
-        div.innerText = `${data.user} ${data.content}`;
-    } else {
+    if (data.type === 'system') { div.style.textAlign='center'; div.style.fontSize='11px'; div.style.color='#fff'; div.style.opacity='0.7'; div.style.margin='10px 0'; div.innerText=`${data.user} ${data.content}`; } 
+    else {
         div.className = isMe ? 'message right' : 'message left';
         let contentHtml = "";
-        
-        let replyPreviewText = "Media";
-        if (data.type === 'text') { 
-            contentHtml = `<span class="msg-content">${data.content}</span>`; 
-            replyPreviewText = data.content;
-        }
-        else if (data.type === 'image') {
-            // MODIFIED FOR LIGHTBOX
-            contentHtml = `<img src="${data.content}" class="chat-image" onclick="openLightbox(this.src)" style="cursor:pointer;">`;
-            if(data.caption) contentHtml += `<div class="msg-caption">${data.caption}</div>`;
-            replyPreviewText = "📷 Gambar";
-        }
-        else if (data.type === 'audio') { 
-            contentHtml = `<audio controls src="${data.content}"></audio>`; 
-            replyPreviewText = "🎤 Audio";
-        }
+        if (data.type === 'text') contentHtml = `<span class="msg-content">${data.content}</span>`;
+        else if (data.type === 'image') contentHtml = `<img src="${data.content}" class="chat-image" onclick="openLightbox(this.src)">` + (data.caption ? `<div style="font-size:12px;margin-top:5px">${data.caption}</div>` : '');
+        else if (data.type === 'audio') contentHtml = `<audio controls src="${data.content}"></audio>`;
 
-        let replyHtml = "";
-        if(data.reply) {
-            let shortText = data.reply.text;
-            if(shortText.length > 40) shortText = shortText.substring(0, 40) + "...";
-            
-            replyHtml = `
-                <div class="reply-quote" onclick="scrollToMessage('${data.reply.id}')">
-                    <div class="reply-bar"></div>
-                    <div class="reply-content">
-                        <b>${data.reply.user}</b>
-                        <span>${shortText}</span>
-                    </div>
-                </div>`;
-        }
-        
-        const safeText = replyPreviewText.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        const msgId = data.id || 'unknown';
-        const replyBtn = !isMe ? `<span onclick="setReply('${msgId}', '${data.user}', '${safeText}')" class="reply-btn">↩</span>` : '';
+        let replyHtml = data.reply ? `<div class="reply-quote" onclick="scrollToMessage('${data.reply.id}')"><div class="reply-content"><b>${data.reply.user}</b><span>${data.reply.text.substring(0,40)}...</span></div></div>` : '';
+        const replyBtn = !isMe ? `<i class="material-icons reply-btn" onclick="setReply('${data.id||'unknown'}', '${data.user}', '${data.type==='text'?data.content.replace(/'/g,""):data.type}')">reply</i>` : '';
 
-        div.innerHTML = `
-            <span class="sender-name">${data.user}</span>
-            ${replyHtml}
-            <div>${contentHtml}<span class="time-info">${data.time} ${replyBtn}</span></div>
-        `;
+        div.innerHTML = `<span class="sender-name">${data.user}</span>${replyHtml}<div>${contentHtml}</div><div class="time-info">${data.time} ${replyBtn}</div>`;
     }
     chatBox.appendChild(div);
+    const isAtBottom = (chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight) < 150;
+    if (isAtBottom || isMe) chatBox.scrollTop = chatBox.scrollHeight;
 }
-
-function leaveRoom() {
-    if(confirm("Keluar?")) {
-        if(client && client.connected) publishMessage("telah keluar.", 'system');
-        clearChatHistory();
-        localStorage.removeItem('aksara_name');
-        localStorage.removeItem('aksara_room');
-        location.reload();
-    }
-}
-
-// --- LIGHTBOX FUNCTIONS (BARU) ---
-function openLightbox(src) {
-    const lb = document.getElementById('lightbox-overlay');
-    const img = document.getElementById('lightbox-img');
-    img.src = src; 
-    lb.style.display = 'flex'; 
-}
-
-function closeLightbox(e) {
-    if (e && e.target.id !== 'lightbox-overlay' && !e.target.classList.contains('lightbox-close')) return;
-    
-    document.getElementById('lightbox-overlay').style.display = 'none';
-    document.getElementById('lightbox-img').src = ""; 
-}
+function leaveRoom() { if(confirm("Keluar?")) { publishMessage("telah keluar.", 'system'); clearChatHistory(); localStorage.removeItem('aksara_name'); localStorage.removeItem('aksara_room'); location.reload(); } }
