@@ -168,3 +168,59 @@ audio { height: 35px; width: 200px; filter: none; margin-top: 5px; outline: none
     .login-box { width: 85%; } 
     .message { max-width: 85%; } 
 }
+
+/* === FIX FINAL: PROPORSIONAL & RAPI (NO GEPENG, NO TEMBUS) === */
+
+.message {
+    /* 1. Batasi Lebar Maksimal (Agar tidak tembus kanan) */
+    max-width: 85% !important; 
+    width: fit-content !important; /* Lebar menyesuaikan isi pesan */
+    min-width: 50px; /* Lebar minimal biar gak kekecilan */
+
+    /* 2. Atur Pembungkusan Teks (KUNCI UTAMA) */
+    white-space: pre-wrap !important; /* Jaga spasi/enter tapi tetap wrap */
+    word-wrap: break-word !important; /* Patahkan kata panjang/link */
+    overflow-wrap: break-word !important; /* Standar baru untuk patah kata */
+    word-break: break-word !important; /* Paksa patah jika terlalu panjang */
+
+    /* 3. Jaga Bentuk (Agar tidak gepeng) */
+    height: auto !important;
+    overflow: visible !important; /* Biar shadow/bayangan tetap nongol */
+    
+    /* 4. Reset Box Model */
+    box-sizing: border-box !important;
+    flex-shrink: 1 !important; /* Izinkan mengecil jika layar sempit */
+}
+
+/* Pastikan Container Pesan Rapi */
+#messages {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding-right: 10px; /* Beri napas sedikit di kanan */
+    overflow-x: hidden; /* Cegah scroll samping di container utama */
+}
+
+/* Kunci Gambar agar tidak merusak layout */
+.chat-image {
+    display: block;
+    width: auto !important;
+    max-width: 100% !important; /* Mentok di batas bubble, bukan layar */
+    height: auto !important;
+    object-fit: contain;
+    border-radius: 8px;
+    margin-top: 5px;
+}
+
+/* Kunci Video YouTube */
+.video-container {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Pengaman Layar HP */
+body, .app-glass-container {
+    overflow-x: hidden !important;
+    width: 100%;
+    max-width: 100vw;
+}
