@@ -345,20 +345,31 @@
         }
 
         // --- BOT AMMO (VERIFIED) ---
+        // --- BOT AMMO (FIX: RAPI & RAPAT) ---
         if (data.isBot || data.user === "Ammo🦉" || data.user === "Aksara AI") {
             div.className = 'message left';
+            
+            // [MODIFIED] Style Inline Khusus Bot agar tidak terpengaruh CSS luar
             div.style.background = "linear-gradient(135deg, #2c3e50 0%, #000000 100%)"; 
             div.style.color = "white";
             div.style.borderRadius = "16px 16px 16px 4px";
             div.style.boxShadow = "0 4px 15px rgba(0, 0, 0, 0.4)";
             div.style.border = "1px solid #444";
+            
+            // [MODIFIED] Flex Column agar Rapat Atas-Bawah
+            div.style.display = "flex";
+            div.style.flexDirection = "column";
+            div.style.gap = "4px"; 
+            div.style.padding = "8px 12px";
+            div.style.minWidth = "200px"; // Biar gak gepeng horizontal
+
             div.innerHTML = `
-                <div style="display:flex; align-items:center; gap:5px; margin-bottom:4px;">
-                    <span class="sender-name" style="color:#FFD700; font-weight:bold;">${data.user}</span>
+                <div style="display:flex; align-items:center; gap:6px; margin:0;">
+                    <span class="sender-name" style="color:#FFD700; font-weight:bold; font-size:12px; margin:0;">${data.user}</span>
                     <i class="material-icons" style="font-size:14px; color:#25D366; text-shadow:0 0 5px rgba(37,211,102,0.5);" title="Verified Bot">verified</i>
                 </div>
-                <div style="line-height:1.5;">${contentHtml}</div>
-                <div class="time-info" style="color:rgba(255,255,255,0.6)">${data.time} ${deleteBtnHtml}</div>
+                <div style="line-height:1.4; font-size:14px; margin:0;">${contentHtml}</div>
+                <div class="time-info" style="color:rgba(255,255,255,0.6); font-size:10px; align-self:flex-end; margin:0;">${data.time} ${deleteBtnHtml}</div>
             `;
             return div;
         }
