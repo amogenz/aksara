@@ -562,7 +562,7 @@ parts: [{ text:
                     <span>AKSARA</span>
                     <i class="material-icons" style="color:#FFD700; font-size:14px;">verified</i>
                 </div>
-                <div class="admin-content">"${contentHtml}"</div>
+                <div class="admin-content">${contentHtml}</div>
                 <div class="admin-time">
                     <span>${data.time}</span>
                     ${actionButtons}
@@ -871,25 +871,65 @@ parts: [{ text:
             .message-mention { border: 2px solid #FFD700 !important; background: rgba(255, 215, 0, 0.15) !important; animation: mentionPulse 1.5s infinite ease-in-out; }
             @keyframes mentionPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
             
-            /* --- CSS ADMIN CARD (FIXED) --- */
+                        /* --- KOTAK UTAMA --- */
             .message.admin {
-                width: 85%; max-width: 350px; margin: 20px auto !important; 
-                background: linear-gradient(180deg, rgba(30,30,30,0.9) 0%, rgba(10,10,10,0.95) 100%);
-                border: 1px solid #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); border-radius: 16px;
+                width: 85%; 
+                max-width: 350px; 
+                margin: 20px auto !important; 
+                
+                /* KUNCI 1: Flexbox Vertikal & Center */
                 display: flex !important;
                 flex-direction: column !important;
-                align-items: center !important; /* Rata Tengah Horizontal */
-                justify-content: center !important; /* Rata Tengah Vertikal */
+                align-items: center !important; /* Memusatkan anak-anaknya secara Horizontal */
+                justify-content: center !important; 
                 
-                padding: 25px 20px; /* Padding agak besar biar lega */
-                text-align: center;
-                box-sizing: border-box; /* Agar padding tidak merusak lebar */
+                background: linear-gradient(180deg, rgba(30,30,30,0.9) 0%, rgba(10,10,10,0.95) 100%);
+                border: 1px solid #FFD700;
+                box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+                border-radius: 16px;
+                padding: 25px 20px;
+                box-sizing: border-box;
             }
+
+            /* --- BAGIAN TEKS (YANG DIPERBAIKI) --- */
+            .admin-content {
+                /* Font Setting */
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                font-weight: 400;
+                font-style: normal;
+                font-size: 16px;
+                line-height: 1.5;
+                color: #ffffff;
+                
+                /* KUNCI 2: LOGIKA TENGAH KANAN-KIRI */
+                text-align: center !important; /* Meratakan teks di dalam kotak */
+                
+                width: fit-content !important; /* Lebar kotak MENYUSUT sesuai panjang teks */
+                max-width: 100%;               /* Tapi jangan sampai keluar pagar */
+                
+                display: block !important;
+                margin-left: auto !important;  /* Dorong dari Kiri */
+                margin-right: auto !important; /* Dorong dari Kanan */
+                margin-bottom: 15px !important; /* Jarak ke bawah */
+                
+                white-space: normal !important;
+            }
+
+            /* Badge Header */
             .admin-badge {
-                display: flex !important; flex-direction: row !important; justify-content: center !important; 
-                align-items: center !important; width: 100%; margin-bottom: 12px; gap: 1px;
-                font-size: 12px; font-weight: 900; letter-spacing: 1px; color: #FFD700; text-transform: uppercase;
+                display: flex !important;
+                justify-content: center !important; /* Rata Tengah */
+                align-items: center !important;
+                width: 100%;
+                margin-bottom: 12px;
+                gap: 4px;
+                font-size: 12px;
+                font-weight: 900;
+                letter-spacing: 1px;
+                color: #FFD700;
+                text-transform: uppercase;
             }
+
             .admin-content {
                 /* --- FONT KHAS IOS (APPLE STYLE) --- */
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
