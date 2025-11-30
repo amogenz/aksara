@@ -67,6 +67,59 @@
         container.appendChild(toast);
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 500); }, 3000);
     }
+    
+    
+    // ==================== FITUR DOWNLOAD STORY (ULTRA HD) ====================
+    
+    window.downloadAdminMessage = function(msgId) {
+        const element = document.getElementById(msgId);
+        if (!element) return;
+
+        showToast("Sedang merender Ultra HD...", "info");
+
+        // 1. Sembunyikan ikon agar bersih
+        const icons = element.querySelectorAll('.admin-actions');
+        icons.forEach(icon => icon.style.display = 'none');
+
+        // 2. Settingan Khusus HD
+        html2canvas(element, {
+            backgroundColor: "#121212", // Background Hitam Solid
+            
+            scale: 5, // <--- KUNCI 1: Resolusi 5x lipat (Setara 4K)
+            
+            useCORS: true,
+            logging: false,
+            allowTaint: true,
+            onclone: (clonedDoc) => {
+                const clonedEl = clonedDoc.getElementById(msgId);
+                if (clonedEl) {
+                    // Pastikan elemen terlihat sempurna saat difoto
+                    clonedEl.style.boxShadow = "none";
+                    clonedEl.style.margin = "0"; 
+                    clonedEl.style.transform = "none"; 
+                }
+            }
+        }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'Aksara_Story_HD_' + Date.now() + '.png'; // <--- KUNCI 2: Format PNG
+            
+            // Simpan sebagai PNG (Kualitas Paling Tinggi/Tanpa Kompresi)
+            link.href = canvas.toDataURL("image/png"); 
+            
+            link.click();
+
+            // Kembalikan tampilan semula
+            icons.forEach(icon => icon.style.display = 'flex');
+            showToast("Gambar HD Tersimpan!", "success");
+        }).catch(err => {
+            console.error("Gagal render:", err);
+            showToast("Gagal menyimpan gambar.", "error");
+            icons.forEach(icon => icon.style.display = 'flex');
+        });
+    };
+
+
+    
 
     // ==================== AI LOGIC (AMMO PERSONA) ====================
     
@@ -386,52 +439,101 @@ parts: [{ text:
             contentHtml = processMessageContent(data.content.replace(/\n/g, '<br>'));
         }
 
+
+        // --- TAMPILAN USER SW (STORY MODE) ---
+        // Jika pesan tipenya 'quote' (hasil dari ketik /sw)
+        if (data.type === 'quote') {
+            div.className = 'message admin'; // Kita "pinjam" baju (style) milik Admin biar estetik
+            
+            // Tombol Download
+            const actionButtons = `
+                <span class="admin-actions">
+                    <i class="material-icons" onclick="window.downloadAdminMessage('${data.id}')" 
+                       style="font-size:14px; color:#FFD700; cursor:pointer;" title="Simpan ke Galeri">download</i>
+                    
+                    ${isAdminMode ? `<i class="material-icons" onclick="window.deleteAnyMessage('${data.id}')" 
+                       style="font-size:14px; color:#ff4444; cursor:pointer;">delete</i>` : ''}
+                </span>
+            `;
+
+            div.innerHTML = `
+                <div class="admin-badge">
+                    <span>${data.user}</span> 
+                    <i class="material-icons" style="color:#FFD700; font-size:14px; margin-left:0;">auto_awesome</i>
+                </div>
+                
+                <div class="admin-content">
+                    ${contentHtml}
+                </div>
+                
+                <div class="admin-time">
+                    <span>${data.time}</span>
+                    ${actionButtons}
+                </div>
+            `;
+            return div;
+        }
+
+
+
         // --- BOT AMMO (VERIFIED) ---
-        // --- BOT AMMO (VERIFIED) ---
+        // --- BOT AMMO (VERIFIED & COMPACT FIX) ---
         if (data.isBot || data.user === "Ammo🦉" || data.user === "Aksara AI") {
             div.className = 'message left';
             
-            // Style Bot (CSS Inline)
+            // 1. STYLE UTAMA BUBBLE (Flex Column: Atas ke Bawah)
             Object.assign(div.style, {
                 background: "linear-gradient(135deg, #2c3e50 0%, #000000 100%)",
                 color: "white",
                 borderRadius: "16px 16px 16px 4px",
                 boxShadow: "0 4px 15px rgba(0, 0, 0, 0.4)",
                 border: "1px solid #444",
+                
                 display: "flex",
-                flexDirection: "column",
-                gap: "0px",
-                padding: "8px 12px 2px 12x",
-                minWidth: "200px"
+                flexDirection: "column", // Susunan: Header -> Isi -> Footer
+                
+                // PENGATURAN JARAK AGAR TIDAK MELAR
+                gap: "2px", 
+                padding: "8px 12px 4px 12px", // Bawah cuma 4px
+                minWidth: "150px",
+                width: "fit-content",
+                maxWidth: "75%"
             });
 
-            // 1. SIAPKAN DATA UNTUK TOMBOL REPLY
-            // Kita ganti tanda kutip (') dengan kosong agar tidak merusak kodingan saat diklik
+            // 2. DATA TOMBOL REPLY
             const safeContent = data.content ? data.content.replace(/['"`]/g, "").substring(0, 40) : "Media";
             const safeId = data.id || "bot-msg";
             const safeUser = data.user || "Ammo";
 
-            // 2. BUAT TOMBOL REPLY
-            // Perhatikan tanda kutipnya baik-baik
+            // Tombol Reply (Icon Panah)
             const replyBtnBot = `
                 <i class="material-icons reply-btn" 
-                   style="cursor:pointer; font-size:14px; margin-left:10px; color:#FFD700; opacity:1 !important;" 
+                   style="cursor:pointer; font-size:14px; margin-left:6px; color:#FFD700; opacity:1 !important; display:inline-flex;" 
                    onclick="event.stopPropagation(); window.setReply('${safeId}', '${safeUser}', '${safeContent}...')">
                    reply
                 </i>
             `;
 
-            // 3. RAKIT HTML PESAN
+            // 3. SUSUNAN HTML
             div.innerHTML = `
-                <div style="display:flex; align-items:center; gap:6px; margin:0;">
+                <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
                     <span class="sender-name" style="color:#FFD700; font-weight:bold; font-size:12px; margin:0;">${data.user}</span>
                     <i class="material-icons" style="font-size:14px; color:#25D366; text-shadow:0 0 5px rgba(37,211,102,0.5);" title="Verified Bot">verified</i>
                 </div>
                 
                 <div style="line-height:1.4; font-size:14px; margin:0;">${contentHtml}</div>
                 
-                <div class="time-info" style="color:rgba(255,255,255,0.6); font-size:10px; align-self:flex-end; margin:2px 0 0 0; display:flex; align-items:center;">
-                    ${data.time} 
+                <div class="time-info" style="
+                    color: rgba(255,255,255,0.6); 
+                    font-size: 10px; 
+                    align-self: flex-end; /* Rata Kanan */
+                    margin-top: 2px; 
+                    
+                    display: flex;        /* Baris ke samping */
+                    align-items: center;  /* Rata tengah vertikal */
+                    justify-content: flex-end;
+                ">
+                    <span>${data.time}</span>
                     ${replyBtnBot}
                     ${deleteBtnHtml}
                 </div>
@@ -440,9 +542,32 @@ parts: [{ text:
         }
 
 
+
+        // --- 1. TAMPILAN ADMIN / QUOTES (FIXED UI) ---
         if (data.isAdmin || data.type === 'admin') {
             div.className = 'message admin';
-            div.innerHTML = `<div class="admin-badge">AKSARA <i class="material-icons" style="font-size:16px; color:#FFD700; margin-left:4px;">verified</i></div><div class="admin-content">${contentHtml}</div><div class="admin-time">${data.time} ${deleteBtnHtml}</div>`;
+            
+            const actionButtons = `
+                <span class="admin-actions">
+                    <i class="material-icons" onclick="window.downloadAdminMessage('${data.id}')" 
+                       style="font-size:14px; color:#FFD700; cursor:pointer;" title="Download">download</i>
+                    
+                    ${isAdminMode ? `<i class="material-icons" onclick="window.deleteAnyMessage('${data.id}')" 
+                       style="font-size:14px; color:#ff4444; cursor:pointer;">delete</i>` : ''}
+                </span>
+            `;
+
+            div.innerHTML = `
+                <div class="admin-badge">
+                    <span>AKSARA</span>
+                    <i class="material-icons" style="color:#FFD700; font-size:14px;">verified</i>
+                </div>
+                <div class="admin-content">"${contentHtml}"</div>
+                <div class="admin-time">
+                    <span>${data.time}</span>
+                    ${actionButtons}
+                </div>
+            `;
             return div;
         }
 
@@ -532,48 +657,47 @@ parts: [{ text:
         const text = input.value.trim();
         if (!text) return;
 
+        // Proteksi command system (tetap)
         if (text.startsWith('/admin') || text.startsWith('/hapusadmin') || text === '/exit') {
             showToast("Karakter tidak valid.", "info");
             input.value = ''; return;
         }
 
+        // --- FITUR USER STORY (Ganti /quote jadi /sw) ---
+        if (text.toLowerCase().startsWith('/sw ')) {
+            // Ambil isi pesan setelah spasi (indeks ke-4 karena "/sw " ada 4 karakter)
+            const quoteContent = text.substring(4).trim(); 
+            
+            if (quoteContent) {
+                publishMessage(quoteContent, 'quote'); // Kirim dengan tipe 'quote'
+                
+                input.value = ''; 
+                input.style.height = 'auto'; 
+                input.focus();
+                return; // Stop, jangan lanjut ke logika lain
+            }
+        } 
+
         // --- DETEKSI PEMANGGILAN AI ---
         const isManualCall = text.toLowerCase().startsWith('@amo ') || text.toLowerCase().startsWith('@ai ');
-        
         const isReplyingToBot = replyingTo && (
             replyingTo.user.toLowerCase().includes('ammo') || 
             replyingTo.user.toLowerCase().includes('ai')
         );
 
-        // 1. KIRIM PESAN USER (Cukup sekali ini saja)
+        // Kirim pesan text biasa jika bukan /sw
         publishMessage(text, 'text');
 
-        // 2. Simpan teks asli untuk prompt AI, lalu bersihkan input
         let originalText = text;
-        input.value = ''; 
-        input.style.height = 'auto'; 
-        input.focus();
+        input.value = ''; input.style.height = 'auto'; input.focus();
 
-        // 3. Jika manggil AI, jalankan logika AI
         if (isManualCall || isReplyingToBot) {
             let prompt = originalText;
-            if (isManualCall) {
-                prompt = originalText.replace(/^@(amo|ai)\s+/i, '');
-            }
-
-            // Trik Visual Typing
-            const typingInd = document.getElementById('typing-indicator');
-            if(typingInd) {
-                typingInd.innerText = "Ammo🦉 sedang mengetik...";
-                typingInd.style.color = "#FFD700"; 
-                typingInd.style.display = "block";
-            }
-
+            if (isManualCall) prompt = originalText.replace(/^@(amo|ai)\s+/i, '');
+            
+            // ... logika indikator typing ...
             askAI(prompt);
-            // Tidak perlu return, karena kode di bawah sudah dihapus
         }
-
-        // (Bagian publishMessage kedua yang dulu ada di sini SUDAH DIHAPUS)
     }
 
 
@@ -618,7 +742,9 @@ parts: [{ text:
             localChatHistory.push(payload);
             if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77);
             addSingleMessage(payload); // Langsung render ke layar!
-					         scrollToBottom(true);
+            
+            			scrollToBottom(true);
+            
             debouncedSaveToLocal();
         }
 
@@ -738,7 +864,6 @@ parts: [{ text:
 
                     // --- TEMPEL INI DI BAGIAN PALING BAWAH, GANTIKAN SEMUA window.addEventListener LAINNYA ---
     window.addEventListener('load', () => {
-        // 1. INJECT CSS
         const style = document.createElement('style');
         style.innerHTML = `
             .date-divider { display: flex; justify-content: center; margin: 15px 0; position: relative; }
@@ -746,8 +871,53 @@ parts: [{ text:
             .message-mention { border: 2px solid #FFD700 !important; background: rgba(255, 215, 0, 0.15) !important; animation: mentionPulse 1.5s infinite ease-in-out; }
             @keyframes mentionPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); } }
             
+            /* --- CSS ADMIN CARD (FIXED) --- */
+            .message.admin {
+                width: 85%; max-width: 350px; margin: 20px auto !important; 
+                background: linear-gradient(180deg, rgba(30,30,30,0.9) 0%, rgba(10,10,10,0.95) 100%);
+                border: 1px solid #FFD700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); border-radius: 16px;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important; /* Rata Tengah Horizontal */
+                justify-content: center !important; /* Rata Tengah Vertikal */
+                
+                padding: 25px 20px; /* Padding agak besar biar lega */
+                text-align: center;
+                box-sizing: border-box; /* Agar padding tidak merusak lebar */
+            }
+            .admin-badge {
+                display: flex !important; flex-direction: row !important; justify-content: center !important; 
+                align-items: center !important; width: 100%; margin-bottom: 12px; gap: 1px;
+                font-size: 12px; font-weight: 900; letter-spacing: 1px; color: #FFD700; text-transform: uppercase;
+            }
+            .admin-content {
+                /* --- FONT KHAS IOS (APPLE STYLE) --- */
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                
+                font-weight: 400; /* Ketebalan normal khas iOS */
+                font-style: normal; /* Hapus italic biar terlihat modern */
+                font-size: 16px; 
+                line-height: 1.5; 
+                color: #ffffff; 
+                text-align: center !important;
+                width: 100% !important; /* Wajib full width */
+                display: block !important;
+                margin: 0 auto 15px auto !important; /* Tengah kiri-kanan */
+            
+            }
+            .admin-time {
+                display: flex; justify-content: center !important; align-items: center !important; 
+                gap: 8px; width: 100%; color: #888; font-size: 11px;
+            }
+            .admin-actions {
+                display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.1); 
+                padding: 4px 8px; border-radius: 20px;
+            }
+
+            /* --- CSS TOMBOL SCROLL (FIXED POSITION) --- */
             #scroll-bottom-btn {
-                position: absolute; bottom: 85px; right: 15px; width: 35px; height: 35px;
+                position: absolute;
+                bottom: 85px; right: 15px; width: 35px; height: 35px;
                 background: rgba(30, 30, 30, 0.9); backdrop-filter: blur(5px);
                 border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%;
                 color: #fff; display: flex; justify-content: center; align-items: center;
@@ -756,10 +926,7 @@ parts: [{ text:
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             #scroll-bottom-btn.show { opacity: 1; visibility: visible; transform: translateY(0); }
-            #new-msg-badge {
-                position: absolute; top: 0; right: 0; width: 10px; height: 10px;
-                background: #ff4444; border-radius: 50%; display: none; border: 2px solid #1e1e1e;
-            }
+            #new-msg-badge { position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: #ff4444; border-radius: 50%; display: none; border: 2px solid #1e1e1e; }
         `;
         document.head.appendChild(style);
 
