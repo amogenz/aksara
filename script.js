@@ -618,6 +618,7 @@ parts: [{ text:
             localChatHistory.push(payload);
             if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77);
             addSingleMessage(payload); // Langsung render ke layar!
+					         scrollToBottom(true);
             debouncedSaveToLocal();
         }
 
