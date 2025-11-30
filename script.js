@@ -12,6 +12,10 @@
     const ADMIN_CONFIG = {
         hashKey: "71710" 
     };
+    
+    //  BATAS WAKTU 24 JAM (dalam milidetik) ---
+    // 24 jam * 60 menit * 60 detik * 1000 milidetik
+    const MESSAGE_EXPIRY_MS = 24 * 60 * 60 * 1000; 
 
     const _part1 = "AIzaSyAOWoPxT";
     
@@ -71,29 +75,36 @@
     
     // ==================== FITUR DOWNLOAD STORY (ULTRA HD) ====================
     
+        // ==================== FITUR DOWNLOAD STORY (ULTRA HD - NO TIMER) ====================
+    
     window.downloadAdminMessage = function(msgId) {
         const element = document.getElementById(msgId);
         if (!element) return;
 
         showToast("Sedang merender Ultra HD...", "info");
 
-        // 1. Sembunyikan ikon agar bersih
-        const icons = element.querySelectorAll('.admin-actions');
-        icons.forEach(icon => icon.style.display = 'none');
+        // --- PERBAIKAN DI SINI (SEMBUNYIKAN TIMER) ---
+        // Kita pilih dua elemen sekaligus pakai koma: .admin-actions DAN .live-timer
+        const elementsToHide = element.querySelectorAll('.admin-actions, .live-timer');
+        
+        elementsToHide.forEach(el => {
+            // Simpan dulu display aslinya (flex atau inline) ke dalam atribut sementara
+            el.setAttribute('data-temp-display', window.getComputedStyle(el).display);
+            // Lalu sembunyikan
+            el.style.display = 'none';
+        });
+        // ---------------------------------------------
 
-        // 2. Settingan Khusus HD
+        // 2. Settingan Khusus HD (Masih sama kayak kemarin)
         html2canvas(element, {
-            backgroundColor: "#121212", // Background Hitam Solid
-            
-            scale: 5, // <--- KUNCI 1: Resolusi 5x lipat (Setara 4K)
-            
+            backgroundColor: "#121212", 
+            scale: 5, 
             useCORS: true,
             logging: false,
             allowTaint: true,
             onclone: (clonedDoc) => {
                 const clonedEl = clonedDoc.getElementById(msgId);
                 if (clonedEl) {
-                    // Pastikan elemen terlihat sempurna saat difoto
                     clonedEl.style.boxShadow = "none";
                     clonedEl.style.margin = "0"; 
                     clonedEl.style.transform = "none"; 
@@ -101,22 +112,31 @@
             }
         }).then(canvas => {
             const link = document.createElement('a');
-            link.download = 'Aksara_Story_HD_' + Date.now() + '.png'; // <--- KUNCI 2: Format PNG
-            
-            // Simpan sebagai PNG (Kualitas Paling Tinggi/Tanpa Kompresi)
+            link.download = 'Aksara_Story_HD_' + Date.now() + '.png'; 
             link.href = canvas.toDataURL("image/png"); 
-            
             link.click();
 
-            // Kembalikan tampilan semula
-            icons.forEach(icon => icon.style.display = 'flex');
+            // --- PERBAIKAN DI SINI (MUNCULKAN LAGI) ---
+            // Kembalikan tampilan elemen seperti semula setelah selesai difoto
+            elementsToHide.forEach(el => {
+                 el.style.display = el.getAttribute('data-temp-display') || '';
+                 el.removeAttribute('data-temp-display');
+            });
+            // ------------------------------------------
+
             showToast("Gambar HD Tersimpan!", "success");
         }).catch(err => {
             console.error("Gagal render:", err);
             showToast("Gagal menyimpan gambar.", "error");
-            icons.forEach(icon => icon.style.display = 'flex');
+            
+            // Jangan lupa munculkan lagi kalau error, biar gak ilang selamanya
+            elementsToHide.forEach(el => {
+                 el.style.display = el.getAttribute('data-temp-display') || '';
+                 el.removeAttribute('data-temp-display');
+            });
         });
     };
+
 
 
     
@@ -413,39 +433,47 @@ parts: [{ text:
         
     }
 
-    function createMessageElement(data) {
+        function createMessageElement(data) {
         const div = document.createElement('div');
         const isMe = data.user === myName;
         if (data.id) div.id = data.id;
         
+        // --- PESAN SISTEM ---
         if (data.type === 'system') {
             div.style.textAlign = 'center'; div.style.fontSize = '11px'; div.style.color = '#fff'; div.style.opacity = '0.7'; div.style.margin = '10px 0'; 
             div.innerText = `${data.user} ${data.content}`;
             return div;
         }
 
+        // --- TOMBOL DELETE (GLOBAL) ---
         let deleteBtnHtml = "";
         if (isAdminMode) {
             deleteBtnHtml = `<i class="material-icons" onclick="window.deleteAnyMessage('${data.id}')" style="font-size:14px; color:rgba(255, 59, 48, 0.8); cursor:pointer; margin-left:8px; vertical-align:middle;">delete_outline</i>`;
         }
 
+        // --- PROSES KONTEN (GAMBAR/AUDIO/TEXT) ---
         let contentHtml = "";
         if (data.type === 'image') {
             contentHtml = `<img src="${data.content}" class="chat-image" onclick="window.openLightbox(this.src)" style="max-height:200px; width:auto;">` + (data.caption ? `<div style="font-size:12px;margin-top:5px;color:#fff">${data.caption}</div>` : '');
         } else if (data.type === 'audio') {
             contentHtml = `<audio controls src="${data.content}" style="width:100%; margin-top:5px;"></audio>`;
         } else {
-            // [MODIFIED] Gunakan Smart Processor untuk Text (YouTube)
             contentHtml = processMessageContent(data.content.replace(/\n/g, '<br>'));
         }
 
-
-        // --- TAMPILAN USER SW (STORY MODE) ---
-        // Jika pesan tipenya 'quote' (hasil dari ketik /sw)
-        if (data.type === 'quote') {
-            div.className = 'message admin'; // Kita "pinjam" baju (style) milik Admin biar estetik
+        // ============================================================
+        // 1. TAMPILAN ADMIN & USER SW (STORY MODE + TIMER)
+        // ============================================================
+        const isStoryMode = data.isAdmin || data.type === 'admin' || data.type === 'quote';
+        
+        if (isStoryMode) {
+            div.className = 'message admin'; // Pakai style kaca estetik
             
-            // Tombol Download
+            // Tentukan Icon & Nama (Admin=Verified, User=Bintang)
+            const badgeIcon = (data.isAdmin || data.type === 'admin') ? 'verified' : 'auto_awesome';
+            const badgeName = (data.isAdmin || data.type === 'admin') ? 'AKSARA' : data.user;
+
+            // Tombol Action (Download & Delete)
             const actionButtons = `
                 <span class="admin-actions">
                     <i class="material-icons" onclick="window.downloadAdminMessage('${data.id}')" 
@@ -458,8 +486,8 @@ parts: [{ text:
 
             div.innerHTML = `
                 <div class="admin-badge">
-                    <span>${data.user}</span> 
-                    <i class="material-icons" style="color:#FFD700; font-size:14px; margin-left:0;">auto_awesome</i>
+                    <span>${badgeName}</span> 
+                    <i class="material-icons" style="color:#FFD700; font-size:14px; margin-left:0;">${badgeIcon}</i>
                 </div>
                 
                 <div class="admin-content">
@@ -468,44 +496,41 @@ parts: [{ text:
                 
                 <div class="admin-time">
                     <span>${data.time}</span>
+                    
+                    <span class="live-timer" data-created="${data.timestamp}" 
+                          style="color:#ff4444; font-weight:bold; font-size:10px; border:1px solid #ff4444; padding:1px 4px; border-radius:4px; margin-left:5px;">
+                          ...
+                    </span>
                     ${actionButtons}
                 </div>
             `;
             return div;
         }
 
-
-
-        // --- BOT AMMO (VERIFIED) ---
-        // --- BOT AMMO (VERIFIED & COMPACT FIX) ---
+        // ============================================================
+        // 2. TAMPILAN BOT AMMO (VERIFIED)
+        // ============================================================
         if (data.isBot || data.user === "Ammo🦉" || data.user === "Aksara AI") {
             div.className = 'message left';
-            
-            // 1. STYLE UTAMA BUBBLE (Flex Column: Atas ke Bawah)
             Object.assign(div.style, {
                 background: "linear-gradient(135deg, #2c3e50 0%, #000000 100%)",
                 color: "white",
                 borderRadius: "16px 16px 16px 4px",
                 boxShadow: "0 4px 15px rgba(0, 0, 0, 0.4)",
                 border: "1px solid #444",
-                
                 display: "flex",
-                flexDirection: "column", // Susunan: Header -> Isi -> Footer
-                
-                // PENGATURAN JARAK AGAR TIDAK MELAR
-                gap: "2px", 
-                padding: "8px 12px 4px 12px", // Bawah cuma 4px
+                flexDirection: "column",
+                gap: "2px",
+                padding: "8px 12px 4px 12px",
                 minWidth: "150px",
                 width: "fit-content",
                 maxWidth: "75%"
             });
 
-            // 2. DATA TOMBOL REPLY
             const safeContent = data.content ? data.content.replace(/['"`]/g, "").substring(0, 40) : "Media";
             const safeId = data.id || "bot-msg";
             const safeUser = data.user || "Ammo";
 
-            // Tombol Reply (Icon Panah)
             const replyBtnBot = `
                 <i class="material-icons reply-btn" 
                    style="cursor:pointer; font-size:14px; margin-left:6px; color:#FFD700; opacity:1 !important; display:inline-flex;" 
@@ -514,64 +539,22 @@ parts: [{ text:
                 </i>
             `;
 
-            // 3. SUSUNAN HTML
             div.innerHTML = `
                 <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
                     <span class="sender-name" style="color:#FFD700; font-weight:bold; font-size:12px; margin:0;">${data.user}</span>
                     <i class="material-icons" style="font-size:14px; color:#25D366; text-shadow:0 0 5px rgba(37,211,102,0.5);" title="Verified Bot">verified</i>
                 </div>
-                
                 <div style="line-height:1.4; font-size:14px; margin:0;">${contentHtml}</div>
-                
-                <div class="time-info" style="
-                    color: rgba(255,255,255,0.6); 
-                    font-size: 10px; 
-                    align-self: flex-end; /* Rata Kanan */
-                    margin-top: 2px; 
-                    
-                    display: flex;        /* Baris ke samping */
-                    align-items: center;  /* Rata tengah vertikal */
-                    justify-content: flex-end;
-                ">
-                    <span>${data.time}</span>
-                    ${replyBtnBot}
-                    ${deleteBtnHtml}
+                <div class="time-info" style="color:rgba(255,255,255,0.6); font-size:10px; align-self:flex-end; margin-top:2px; display:flex; align-items:center; justify-content:flex-end;">
+                    <span>${data.time}</span> ${replyBtnBot} ${deleteBtnHtml}
                 </div>
             `;
             return div;
         }
 
-
-
-        // --- 1. TAMPILAN ADMIN / QUOTES (FIXED UI) ---
-        if (data.isAdmin || data.type === 'admin') {
-            div.className = 'message admin';
-            
-            const actionButtons = `
-                <span class="admin-actions">
-                    <i class="material-icons" onclick="window.downloadAdminMessage('${data.id}')" 
-                       style="font-size:14px; color:#FFD700; cursor:pointer;" title="Download">download</i>
-                    
-                    ${isAdminMode ? `<i class="material-icons" onclick="window.deleteAnyMessage('${data.id}')" 
-                       style="font-size:14px; color:#ff4444; cursor:pointer;">delete</i>` : ''}
-                </span>
-            `;
-
-            div.innerHTML = `
-                <div class="admin-badge">
-                    <span>AKSARA</span>
-                    <i class="material-icons" style="color:#FFD700; font-size:14px;">verified</i>
-                </div>
-                <div class="admin-content">${contentHtml}</div>
-                <div class="admin-time">
-                    <span>${data.time}</span>
-                    ${actionButtons}
-                </div>
-            `;
-            return div;
-        }
-
-        // --- USER & MENTION ---
+        // ============================================================
+        // 3. TAMPILAN USER BIASA
+        // ============================================================
         div.className = isMe ? 'message right' : 'message left';
         if (!isMe && data.type === 'text' && data.content && myName && data.content.toLowerCase().includes('@' + myName.toLowerCase())) {
             div.classList.add('message-mention');
@@ -581,12 +564,12 @@ parts: [{ text:
         if (data.reply) {
             replyHtml = `<div class="reply-quote" onclick="window.scrollToMessage('${data.reply.id}')"><div class="reply-content"><b>${data.reply.user}</b><span>${data.reply.text.substring(0, 40)}...</span></div></div>`;
         }
-
         const replyBtn = !isMe ? `<i class="material-icons reply-btn" onclick="window.setReply('${data.id||'unknown'}', '${data.user}', '${data.type==='text'?data.content.replace(/'/g,""):data.type}')">reply</i>` : '';
 
         div.innerHTML = `<span class="sender-name">${data.user}</span>${replyHtml}<div>${contentHtml}</div><div class="time-info">${data.time} ${replyBtn} ${deleteBtnHtml}</div>`;
         return div;
     }
+
 
     // ==================== MAIN CONNECTION ====================
 
@@ -755,55 +738,51 @@ parts: [{ text:
         if (!isAdminMode) cancelReply();
     }
 
-      function handleIncomingMessage(data) {
+          function handleIncomingMessage(data) {
         if (data.type === 'message_deleted') return;
         
+        // --- LOGIKA HAPUS OTOMATIS 1x24 JAM ---
+        if (data.isAdmin || data.type === 'admin') {
+            const msgAge = Date.now() - data.timestamp;
+            // Jika umur pesan lebih dari 24 jam, JANGAN DITAMPILKAN
+            if (msgAge > MESSAGE_EXPIRY_MS) {
+                return; // Stop di sini, pesan dianggap hantu/hilang
+            }
+        }
+        // ---------------------------------------
+
         if (data.type !== 'system' && data.type !== 'admin_clear') {
             if (!localChatHistory.some(msg => msg.id === data.id)) {
                 
-                // 1. Simpan ke variabel array JS
                 localChatHistory.push(data);
+                // Batasi history biar gak berat
                 if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77); 
                 
-                // 2. Render pesan ke layar
                 addSingleMessage(data); 
 
-                // --- 3. LOGIKA SCROLL & TITIK MERAH (BARU) ---
+                // Scroll & Badge Logic
                 const chatBox = document.getElementById('messages');
                 const btn = document.getElementById('scroll-bottom-btn');
                 const badge = document.getElementById('new-msg-badge');
                 
-                // Cek apakah user sedang di atas (lebih dari 150px dari bawah)?
                 const isUserUp = (chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight) > 150;
 
                 if (isUserUp && btn && badge) {
-                    // Jika user di atas: Munculkan titik merah, JANGAN scroll
                     badge.style.display = 'block';
                     showToast("Pesan baru di bawah", "info");
                 } else {
-                    // Jika user di bawah: Auto scroll ke bawah
                     scrollToBottom(false); 
                 }
-                // ---------------------------------------------
 
-                // 4. LOGIKA UMUM (WAJIB JALAN TERUS)
-                // Ini ditaruh DI LUAR if/else di atas, biar tetap jalan kondisinya apapun
                 debouncedSaveToLocal();
-                
-                if (data.user !== myName) { 
-                    playSound('received'); 
-                    showNewMessageNotification(data); 
-                }
-                
-                if (data.user === myName && !data.isAdmin) {
-                    debouncedUpdateServerStorage();
-                }
-
+                if (data.user !== myName) { playSound('received'); showNewMessageNotification(data); }
+                if (data.user === myName && !data.isAdmin) debouncedUpdateServerStorage();
             }
         } else {
             renderSingleElement(data);
         }
     }
+
 
     function renderSingleElement(data) {
         const chatBox = document.getElementById('messages');
@@ -811,11 +790,57 @@ parts: [{ text:
         scrollToBottom(false);
     }
 
-    function loadFromLocal() { const saved = localStorage.getItem(getStorageKey()); if (saved) { localChatHistory = JSON.parse(saved); renderChat(); } }
+        function loadFromLocal() { 
+        const saved = localStorage.getItem(getStorageKey()); 
+        if (saved) { 
+            let parsedHistory = JSON.parse(saved);
+            
+            // --- BERSIHKAN PESAN ADMIN TUA DARI STORAGE ---
+            const now = Date.now();
+            parsedHistory = parsedHistory.filter(msg => {
+                // Jika Pesan Admin DAN Umurnya > 24 Jam, Hapus (False)
+                if ((msg.isAdmin || msg.type === 'admin') && (now - msg.timestamp > MESSAGE_EXPIRY_MS)) {
+                    return false; 
+                }
+                return true; // Pesan lain simpan
+            });
+            // ----------------------------------------------
+
+            localChatHistory = parsedHistory;
+            renderChat(); 
+            
+            // Simpan ulang versi bersihnya
+            saveToLocal();
+        } 
+    }
+
     function saveToLocal() { localStorage.setItem(getStorageKey(), JSON.stringify(localChatHistory)); }
     function getStorageKey() { return 'aksara_history_v29_' + myRoom; }
     function updateServerStorage() { if(client && client.connected) client.publish(storageTopic, JSON.stringify(localChatHistory), { retain: true, qos: 1 }); }
-    function mergeWithLocal(serverData) { let changed = false; serverData.forEach(srvMsg => { if (!localChatHistory.some(locMsg => locMsg.id === srvMsg.id)) { localChatHistory.push(srvMsg); changed = true; } }); if (changed) { localChatHistory.sort((a, b) => a.timestamp - b.timestamp); if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77); debouncedSaveToLocal(); renderChat(); } }
+        function mergeWithLocal(serverData) { 
+        let changed = false; 
+        const now = Date.now();
+
+        serverData.forEach(srvMsg => { 
+            // Cek kadaluwarsa sebelum digabung
+            if ((srvMsg.isAdmin || srvMsg.type === 'admin') && (now - srvMsg.timestamp > MESSAGE_EXPIRY_MS)) {
+                return; // Skip pesan tua
+            }
+
+            if (!localChatHistory.some(locMsg => locMsg.id === srvMsg.id)) { 
+                localChatHistory.push(srvMsg); 
+                changed = true; 
+            } 
+        }); 
+        
+        if (changed) { 
+            localChatHistory.sort((a, b) => a.timestamp - b.timestamp); 
+            if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77); 
+            debouncedSaveToLocal(); 
+            renderChat(); 
+        } 
+    }
+
     
     function scrollToBottom(force = false) {
         const chatBox = document.getElementById('messages');
@@ -945,10 +970,17 @@ parts: [{ text:
                 margin: 0 auto 15px auto !important; /* Tengah kiri-kanan */
             
             }
-            .admin-time {
-                display: flex; justify-content: center !important; align-items: center !important; 
-                gap: 8px; width: 100%; color: #888; font-size: 11px;
+                        .admin-time {
+                display: flex;
+                justify-content: center !important;
+                align-items: center !important;
+                gap: 8px; /* Jarak antar elemen */
+                width: 100%;
+                color: #888;
+                font-size: 11px;
+                flex-wrap: wrap; /* Jaga-jaga kalau layar HP kecil, biar turun rapi */
             }
+
             .admin-actions {
                 display: flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.1); 
                 padding: 4px 8px; border-radius: 20px;
@@ -1059,6 +1091,42 @@ parts: [{ text:
         });
     }
 
+            // ==================== MESIN PENGHITUNG MUNDUR (TIMER 24 JAM) ====================
+    
+    // Konstanta 24 Jam (Pastikan ini ada di bagian atas script juga boleh)
+    const MSG_LIFETIME = 24 * 60 * 60 * 1000; 
+
+    setInterval(() => {
+        // Cari semua elemen yang punya class 'live-timer'
+        const timers = document.querySelectorAll('.live-timer');
+        
+        timers.forEach(timer => {
+            const createdTime = parseInt(timer.getAttribute('data-created'));
+            const expiryTime = createdTime + MSG_LIFETIME;
+            const now = Date.now();
+            const timeLeft = expiryTime - now;
+
+            // Jika Waktu Habis (Kurang dari 0)
+            if (timeLeft <= 0) {
+                // Hapus Pesan dari Layar (Efek Meledak/Hilang)
+                const messageBubble = timer.closest('.message');
+                if (messageBubble) {
+                    messageBubble.style.transition = "opacity 0.5s, transform 0.5s";
+                    messageBubble.style.opacity = "0";
+                    messageBubble.style.transform = "scale(0.8)";
+                    setTimeout(() => messageBubble.remove(), 500);
+                }
+            } else {
+                // Jika Belum Habis, Update Tulisan Waktu
+                const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                
+                // Format: 23j 59m 10d
+                timer.innerText = `${hours}j ${minutes}m ${seconds}d`;
+            }
+        });
+    }, 1000); // Jalan setiap 1 detik
 
 
 
