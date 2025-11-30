@@ -141,9 +141,6 @@
     };
 
 
-
-    
-
     // ==================== AI LOGIC (AMMO PERSONA) ====================
     
 
@@ -153,40 +150,51 @@
             return;
         }
 
-        // Tampilkan indikator mengetik
         if (client && client.connected) {
             client.publish(myRoom, JSON.stringify({type:'typing', user:'ammo🦉'}));
         }
 
         try {
-            // URL Endpoint Gemini
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${AI_API_KEY}`;
             
+            // --- 1. BANGUN KONTEKS (INGATAN) ---
+            // Ambil 6 pesan terakhir dari history lokal untuk konteks
+            const recentChats = localChatHistory.slice(-6); 
+            let contextString = "Riwayat percakapan sebelumnya (untuk konteks):\n";
+            
+            recentChats.forEach(msg => {
+                // Skip pesan system/admin
+                if(msg.type === 'system' || msg.isAdmin) return;
+                
+                // Bersihkan tag HTML dari pesan lama
+                let cleanContent = msg.content ? msg.content.replace(/<[^>]*>?/gm, '') : "";
+                if (msg.type === 'image') cleanContent = "[Mengirim Gambar]";
+                
+                // Labeli pembicara
+                const speaker = (msg.user === 'ammo🦉' || msg.user === 'Aksara AI') ? 'Ammo (Kamu)' : `User ${msg.user}`;
+                contextString += `${speaker}: ${cleanContent}\n`;
+            });
+
+            // --- 2. RAKIT PROMPT FINAL ---
+            let finalPrompt = "";
+            if (replyingTo && replyingTo.text) {
+                const cleanReply = replyingTo.text.replace(/<[^>]*>?/gm, '');
+                finalPrompt = `${contextString}\n[SITUASI: User sedang me-reply pesan "${cleanReply}"]\nUser bertanya: ${prompt}`;
+            } else {
+                finalPrompt = `${contextString}\nUser bertanya: ${prompt}`;
+            }
+
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [
-                        {
-                            role: "user",
-                            parts: [{ text: prompt }]
-                        }
-                    ],
-                    
-                    generationConfig: {
-                        temperature: 0.3
-                    },
-                    
-                    
-// SYSTEM INSTRUCTION (Persona Ammo)
+                    contents: [{ role: "user", parts: [{ text: finalPrompt }] }],
+                    generationConfig: { temperature: 0.3 },
+                    systemInstruction: {
+                    	
+parts: [{ text: "Kamu adalah Ammo. Gaya bicara santai/gaul ngegas . Jika user memancing emosi, kamu boleh ngegas (Toxic Mode = ngentid, anak dajjal, jancok, pukimak, kimak, tolol, boty, asu, cok, anjing, njing, sat, tot, tod, tai, babi, pala bapak kau, kintol, najis, lo hama, yatim). Kamu diberikan riwayat percakapan di atas. Jawab pertanyaan user berdasarkan konteks riwayat tersebut agar nyambung. Jika user minta lagu, cari via Google Search."   }]
 
-systemInstruction: {
-parts: [{ text:
-
-"Kamu adalah asisten AI bernama Ammo. Gaya bicaramu santai, gaul, semi-slang, layaknya teman tongkrongan. Jika user minta lagu atau video, CARIKAN LINK YOUTUBE-NYA lewat Google Search yang tersedia. Jika user memancing emosi, kamu boleh ngegas (Toxic Mode = asu, cok, anjing, njing, sat, tot, tai, babi, pala bapak kau, kintol, najis, lo hama, yatim). Jika user minta lagu, CARIKAN LINK YOUTUBE versi 'Dj Indonesia'  'Lyrics Video' atau 'Official Audio'. JANGAN berikan link 'Official Music Video' (MV) karena sering tidak bisa diputar (embed restricted). Pastikan linknya valid dari hasil pencarian Google . ATURAN KRUSIAL VIDEO (WAJIB PATUH): 1. Jika user minta lagu (terutama lagu Nasional/Official), JANGAN PERNAH ambil dari 'Official Channel', 'VEVO', 'TV Station', atau 'Label Musik'. Video dari sana PASTI ERROR (Video Tidak Tersedia). 2. TUGASMU: Cari video yang diupload oleh 'USER BIASA' atau 'CHANNEL KARAOKE'. 3. KATA KUNCI PENCARIAN: Saat mencari di Google, tambahkan kata 'Lirik' atau 'Karaoke' atau 'Cover' di belakang judul lagu.  4. Contoh: Jangan cari 'Indonesia Raya Official', tapi carilah 'Indonesia Raya Lirik Karaoke' ATURAN 'ANTI-HALUSINASI' (WAJIB DIPATUHI): 1. Saat user meminta video/lagu, kamu WAJIB menggunakan Google Search Tool untuk mencari linknya. 2. DILARANG KERAS membuat/menebak link YouTube sendiri. Jangan asal mengetik ID video acak. 3. HANYA berikan link yang benar-benar muncul di hasil pencarian Google (Grounding). 4. Jika di hasil pencarian tidak ada link YouTube yang valid, KATAKAN JUJUR: 'Sori bro, gue cari di Google gak nemu linknya.' Jangan memaksakan diri memberi link palsu. 5. Prioritaskan video lirik/karaoke agar bisa diputar.  . Jika ditanya siapa kamu, jawab: 'Gue adalah program kecerdasan hasil modifikasi organisasi Amogenz.inc'." }]
                     },
-                    
-// FITUR KUNCI: Mengaktifkan Google Search agar bisa cari Link Youtube Asli
                     tools: [{ googleSearch: {} }] 
                 })
             });
@@ -194,38 +202,26 @@ parts: [{ text:
             const data = await response.json();
             
             if (data.error) {
-                console.error("Error:", data.error);
+                console.error("AI Error:", data.error);
                 publishBotMessage(`❌ Error: ${data.error.message}`);
             } 
             else if (data.candidates && data.candidates[0]) {
                 const candidate = data.candidates[0];
                 let aiReply = candidate.content.parts[0].text;
                 
-                // --- BAGIAN ANTI HALU (LOGIKA BARU) ---
-                // Kita cek apakah Google benar-benar menemukan link asli di metadata
+                // Cek Metadata Google Search
                 let foundRealLink = null;
-
                 if (candidate.groundingMetadata && candidate.groundingMetadata.groundingChunks) {
-                    // Kita cari di dalam "kantung" hasil pencarian Google
                     const chunks = candidate.groundingMetadata.groundingChunks;
                     const youtubeChunk = chunks.find(chunk => 
                         chunk.web && chunk.web.uri && 
                         (chunk.web.uri.includes('youtube.com') || chunk.web.uri.includes('youtu.be'))
                     );
-
-                    if (youtubeChunk) {
-                        foundRealLink = youtubeChunk.web.uri;
-                    }
+                    if (youtubeChunk) foundRealLink = youtubeChunk.web.uri;
                 }
 
-                // Jika kita nemu link asli dari Google (Metadata), KITA PAKSA TEMPEL di chat
-                // Walaupun si AI lupa nulis, atau si AI nulis link palsu, yang ini pasti benar.
-                if (foundRealLink) {
-                    // Hapus link youtube palsu yang mungkin ditulis AI di teks (opsional, biar rapi)
-                    // aiReply = aiReply.replace(/https?:\/\/(www\.)?youtu\.?be.*/g, ''); 
-                    
-                    aiReply += `\n\n${foundRealLink}`; // Tempel link asli di bawah
-                }
+                if (foundRealLink) aiReply += `\n\n${foundRealLink}`; 
+                
                 publishBotMessage(aiReply); 
             } 
             else {
@@ -234,9 +230,10 @@ parts: [{ text:
 
         } catch (error) {
             console.error("Fetch Error:", error);
-            publishBotMessage("❌ Internet lo bapuk njing, gak konek ke Google.");
+            publishBotMessage("❌ Internet lo bapuk, gak konek.");
         }
     }
+
 
 
     function publishBotMessage(content) {
