@@ -8,6 +8,9 @@
     let myRoom = "";
     let storageTopic = ""; 
     const broadcastTopic = "aksara-global-v1/announcements";
+    
+     // --- BATAS JUMLAH CHAT ---
+    const MAX_CHAT_LIMIT = 27;
 
     const ADMIN_CONFIG = {
         hashKey: "71710" 
@@ -721,15 +724,20 @@ parts: [{ text:
         // --- UPDATE OPTIMIS (MUNCUL DULUAN) ---
         // Kita langsung masukkan ke history lokal & layar SEBELUM kirim ke server
         // Cek dulu biar admin mode gak double (karena admin logic beda)
+                // --- UPDATE OPTIMIS (MUNCUL DULUAN) ---
         if (!isAdminMode && type !== 'system') {
             localChatHistory.push(payload);
-            if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77);
-            addSingleMessage(payload); // Langsung render ke layar!
             
-            			scrollToBottom(true);
+            // GUNAKAN VARIABEL DI SINI
+            if (localChatHistory.length > MAX_CHAT_LIMIT) {
+                localChatHistory = localChatHistory.slice(-MAX_CHAT_LIMIT);
+            }
             
+            addSingleMessage(payload);
+            scrollToBottom(true);
             debouncedSaveToLocal();
         }
+
 
         try { 
             client.publish(finalTopic, JSON.stringify(payload), mqttOpts); 
@@ -738,33 +746,38 @@ parts: [{ text:
         if (!isAdminMode) cancelReply();
     }
 
-          function handleIncomingMessage(data) {
+              function handleIncomingMessage(data) {
         if (data.type === 'message_deleted') return;
         
-        // --- LOGIKA HAPUS OTOMATIS 1x24 JAM ---
-        if (data.isAdmin || data.type === 'admin') {
+        // Cek umur pesan Admin/SW (24 Jam)
+        if (data.isAdmin || data.type === 'admin' || data.type === 'quote') { 
             const msgAge = Date.now() - data.timestamp;
-            // Jika umur pesan lebih dari 24 jam, JANGAN DITAMPILKAN
-            if (msgAge > MESSAGE_EXPIRY_MS) {
-                return; // Stop di sini, pesan dianggap hantu/hilang
+            if (msgAge > 24 * 60 * 60 * 1000) { 
+                return; 
             }
         }
-        // ---------------------------------------
 
         if (data.type !== 'system' && data.type !== 'admin_clear') {
+            // Cek duplikasi
             if (!localChatHistory.some(msg => msg.id === data.id)) {
                 
                 localChatHistory.push(data);
-                // Batasi history biar gak berat
-                if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77); 
+                
+                // --- PEMBATASAN CHAT (MAX_CHAT_LIMIT) ---
+                if (localChatHistory.length > MAX_CHAT_LIMIT) {
+                    // Pakai tanda MINUS (-) agar mengambil yang paling baru
+                    localChatHistory = localChatHistory.slice(-MAX_CHAT_LIMIT);
+                }
+                // ----------------------------------------
                 
                 addSingleMessage(data); 
 
-                // Scroll & Badge Logic
+                // Logika Scroll & Badge Merah
                 const chatBox = document.getElementById('messages');
                 const btn = document.getElementById('scroll-bottom-btn');
                 const badge = document.getElementById('new-msg-badge');
                 
+                // Cek apakah user lagi scroll ke atas
                 const isUserUp = (chatBox.scrollHeight - chatBox.scrollTop - chatBox.clientHeight) > 150;
 
                 if (isUserUp && btn && badge) {
@@ -775,13 +788,22 @@ parts: [{ text:
                 }
 
                 debouncedSaveToLocal();
-                if (data.user !== myName) { playSound('received'); showNewMessageNotification(data); }
-                if (data.user === myName && !data.isAdmin) debouncedUpdateServerStorage();
-            }
+                
+                if (data.user !== myName) { 
+                    playSound('received'); 
+                    showNewMessageNotification(data); 
+                }
+                
+                if (data.user === myName && !data.isAdmin) {
+                    debouncedUpdateServerStorage();
+                }
+
+            } // <--- KURUNG PENUTUP INI JANGAN LUPA
         } else {
             renderSingleElement(data);
         }
     }
+
 
 
     function renderSingleElement(data) {
@@ -797,13 +819,17 @@ parts: [{ text:
             
             // --- BERSIHKAN PESAN ADMIN TUA DARI STORAGE ---
             const now = Date.now();
-            parsedHistory = parsedHistory.filter(msg => {
-                // Jika Pesan Admin DAN Umurnya > 24 Jam, Hapus (False)
-                if ((msg.isAdmin || msg.type === 'admin') && (now - msg.timestamp > MESSAGE_EXPIRY_MS)) {
+                        parsedHistory = parsedHistory.filter(msg => {
+                // Cek Admin ATAU User Quote
+                const isStory = msg.isAdmin || msg.type === 'admin' || msg.type === 'quote';
+                
+                // Jika Story DAN Umurnya > 24 Jam, Hapus
+                if (isStory && (now - msg.timestamp > (24 * 60 * 60 * 1000))) {
                     return false; 
                 }
-                return true; // Pesan lain simpan
+                return true; 
             });
+
             // ----------------------------------------------
 
             localChatHistory = parsedHistory;
@@ -821,11 +847,16 @@ parts: [{ text:
         let changed = false; 
         const now = Date.now();
 
-        serverData.forEach(srvMsg => { 
-            // Cek kadaluwarsa sebelum digabung
-            if ((srvMsg.isAdmin || srvMsg.type === 'admin') && (now - srvMsg.timestamp > MESSAGE_EXPIRY_MS)) {
-                return; // Skip pesan tua
+                serverData.forEach(srvMsg => { 
+            const isStory = srvMsg.isAdmin || srvMsg.type === 'admin' || srvMsg.type === 'quote';
+            
+            // Cek kadaluwarsa
+            if (isStory && (now - srvMsg.timestamp > (24 * 60 * 60 * 1000))) {
+                return; 
             }
+            
+            // ... (kode push ke history) ...
+
 
             if (!localChatHistory.some(locMsg => locMsg.id === srvMsg.id)) { 
                 localChatHistory.push(srvMsg); 
@@ -833,12 +864,18 @@ parts: [{ text:
             } 
         }); 
         
-        if (changed) { 
+                if (changed) { 
             localChatHistory.sort((a, b) => a.timestamp - b.timestamp); 
-            if (localChatHistory.length > 77) localChatHistory = localChatHistory.slice(-77); 
+            
+            // GUNAKAN VARIABEL DI SINI
+            if (localChatHistory.length > MAX_CHAT_LIMIT) {
+                localChatHistory = localChatHistory.slice(-MAX_CHAT_LIMIT);
+            }
+            
             debouncedSaveToLocal(); 
             renderChat(); 
         } 
+ 
     }
 
     
