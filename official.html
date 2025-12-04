@@ -1,1 +1,109 @@
-Dalam pengembangan
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tombol Keren Amogenz</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Reset sederhana biar preview enak dilihat */
+        body {
+            background-color: #050505; /* Background Hitam Pekat */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Tengah layar */
+            margin: 0;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* --- MULAI CSS TOMBOL AMOGENZ --- */
+        .amogenz-btn {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px; /* Jarak antara teks dan panah */
+            
+            /* Ukuran & Font */
+            padding: 16px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            
+            /* Warna Awal (Outline Style) */
+            color: #39FF14; /* Hijau Neon */
+            background-color: transparent;
+            border: 2px solid #39FF14;
+            border-radius: 50px; /* Membulat (Pill Shape) */
+            
+            /* Animasi Halus */
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            cursor: pointer;
+            overflow: hidden; /* Biar efek kilatan gak keluar garis */
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.1); /* Glow tipis awal */
+        }
+
+        /* Efek Hover (Saat Kursor Masuk) */
+        .amogenz-btn:hover {
+            background-color: #39FF14;
+            color: #000000; /* Teks jadi hitam biar kebaca */
+            border-color: #39FF14;
+            
+            /* Glow Terang (Neon Effect) */
+            box-shadow: 
+                0 0 30px rgba(57, 255, 20, 0.5),
+                0 0 60px rgba(57, 255, 20, 0.2);
+            
+            transform: translateY(-5px); /* Tombol melayang naik dikit */
+        }
+
+        /* Ikon Panah SVG */
+        .icon-arrow {
+            width: 20px;
+            height: 20px;
+            stroke-width: 3;
+            transition: transform 0.4s ease;
+        }
+
+        /* Animasi Panah saat Hover */
+        .amogenz-btn:hover .icon-arrow {
+            transform: translateX(6px) rotate(-45deg); /* Geser kanan & miring dikit (opsional) */
+        }
+        
+        /* Efek Kilatan Cahaya (Sweep Effect) */
+        .amogenz-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: none;
+        }
+        
+        .amogenz-btn:hover::after {
+            left: 100%;
+            transition: 0.5s; /* Kecepatan kilatan */
+        }
+    </style>
+</head>
+<body>
+
+    <a href="https://amogenz.my.id/" class="amogenz-btn" target="_blank">
+        Visit Official Site
+        <svg class="icon-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+    </a>
+
+</body>
+</html>
