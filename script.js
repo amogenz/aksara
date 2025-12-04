@@ -10,7 +10,7 @@
     const broadcastTopic = "aksara-global-v1/announcements";
     
      // --- BATAS JUMLAH CHAT ---
-    const MAX_CHAT_LIMIT = 27;
+    const MAX_CHAT_LIMIT = 37;
 
     const ADMIN_CONFIG = {
         hashKey: "71710" 
